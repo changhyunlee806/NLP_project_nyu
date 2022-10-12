@@ -23,7 +23,8 @@ The data we will use consists of daily electricity price and demand data between
  	Target: the values -1 represents negative sentiment, 1 represents positive sentiment, and 0 represents neutral
  
  EX. 
- 	Text: when modi promised “minimum government maximum governance” expected him begin the difficult job reforming the state why does take years get justice state should and not business and should exit psus and temples
+ 	Text: when modi promised “minimum government maximum governance” expected him begin the difficult job reforming the state why does take years get
+	      justice state should and not business and should exit psus and temples
  	Target: -1
 
 
