@@ -310,7 +310,7 @@ def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
         emotion_idxs = batch_data[2]
         mask = batch_data[3]
         last_turns = batch_data[4]
-        outputs = model(sentences, mask, speaker_ids, emotion_idxs)
+        outputs = model(sentences, mask, speaker_ids, last_turns, emotion_idxs)
         loss = outputs
         # loss += loss_func(outputs[3], sentiment_idxs)
         tq_train.set_description('loss is {:.2f}'.format(loss.item()))

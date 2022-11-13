@@ -20,8 +20,8 @@ class CRFModel(nn.Module):
     def device(self):
         return self.encoder.device
 
-    # def forward(self, sentences, sentencesMask, speakerIds, lastTurns, emotionIdxes):
-    def forward(self, sentences, sentencesMask, speakerIds, emotionIdxes):
+    def forward(self, sentences, sentencesMask, speakerIds, lastTurns, emotionIdxes=None):
+    #def forward(self, sentences, sentencesMask, speakerIds, emotionIdxes):
         batchSize, maxTurns = sentences.shape[0], sentences.shape[1]
 
         speakerIdsReshaped = speakerIds.reshape(batchSize * maxTurns, -1)
@@ -43,8 +43,8 @@ class CRFModel(nn.Module):
         emissions = self.emission(features)
         crfEmissions = emissions.reshape(batchSize, maxTurns, -1).transpose(0, 1)
         sentencesMask = sentencesMask.transpose(0, 1)
-        # speakerIds = speakerIds.reshape(batchSize, maxTurns).transpose(0, 1)
-        # lastTurns = lastTurns.transpose(0, 1)
+        speakerIds = speakerIds.reshape(batchSize, maxTurns).transpose(0, 1)
+        lastTurns = lastTurns.transpose(0, 1)
 
         # train
         if emotionIdxes is not None:
