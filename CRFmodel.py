@@ -4,7 +4,7 @@ from CRF import *
 class CRFModel(nn.Module):
 
     def __init__(self, numClasses, dropout, bert_path):
-
+        super().__init__()
         self.numClasses = numClasses
         self.dropout = dropout
         self.padValue = 1 # pad value
@@ -17,7 +17,8 @@ class CRFModel(nn.Module):
         self.CRFlayer = CRF(self.numClasses)
         self.emission = nn.Linear(self.dimension, self.numClasses)
         self.lossFunc = torch.nn.CrossEntropyLoss(ignore_index=-1)
-
+    def device(self):
+        return self.encoder.device
 
     # def forward(self, sentences, sentencesMask, speakerIds, lastTurns, emotionIdxes):
     def forward(self, sentences, sentencesMask, speakerIds, emotionIdxes):
@@ -46,7 +47,7 @@ class CRFModel(nn.Module):
         # lastTurns = lastTurns.transpose(0, 1)
 
         # train
-        if emotionIdxes:
+        if emotionIdxes is not None:
             emotionIdxes = emotionIdxes.transpose(0, 1)
             return -self.CRFlayer(crfEmissions, emotionIdxes, mask=sentencesMask) + self.lossFunc(emissions.view(-1, self.numClasses), emotionIdxes.view(-1))
         else:

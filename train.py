@@ -254,8 +254,8 @@ def get_paramsgroup(model, warmup=False):
             list(map(id, model.context_encoder.encoder.layer[layer_idx].parameters()))
         )
     '''
-    bert_params = list(map(id, model.context_encoder.parameters()))
-    crf_params = list(map(id, model.crf_layer.parameters()))
+    bert_params = list(map(id, model.encoder.parameters()))
+    crf_params = list(map(id, model.CRFlayer.parameters()))
     params = []
     warmup_params = []
     for name, param in model.named_parameters():
@@ -310,7 +310,7 @@ def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
         emotion_idxs = batch_data[2]
         mask = batch_data[3]
         last_turns = batch_data[4]
-        outputs = model(sentences, mask, speaker_ids, last_turns, emotion_idxs)
+        outputs = model(sentences, mask, speaker_ids, emotion_idxs)
         loss = outputs
         # loss += loss_func(outputs[3], sentiment_idxs)
         tq_train.set_description('loss is {:.2f}'.format(loss.item()))
