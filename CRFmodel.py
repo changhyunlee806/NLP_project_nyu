@@ -51,4 +51,4 @@ class CRFModel(nn.Module):
             emotionIdxes = emotionIdxes.transpose(0, 1)
             return -self.CRFlayer(crfEmissions, emotionIdxes, mask=sentencesMask) + self.lossFunc(emissions.view(-1, self.numClasses), emotionIdxes.view(-1))
         else:
-            self.CRFlayer.decode(crfEmissions, mask=sentencesMask)
+            return self.CRFlayer.decode(crfEmissions, mask=sentencesMask)
