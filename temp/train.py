@@ -1,10 +1,22 @@
-from config import *
+import vocab
+import pandas as pd
+import numpy as np
+import torch
+from torch.utils.data import TensorDataset
+from transformers import AutoTokenizer
+import random
+from tqdm import tqdm
+import json
+import logging
+import os
 from CRFmodel import CRFModel
 
 speaker_vocab_dict_path = 'vocabs/speaker_vocab.pkl'
 emotion_vocab_dict_path = 'vocabs/emotion_vocab.pkl'
 sentiment_vocab_dict_path = 'vocabs/sentiment_vocab.pkl'
 
+tokenizer = AutoTokenizer.from_pretrained('roberta-base')
+SEP = tokenizer('')['input_ids'][1]
 
 def pad_to_len(list_data, max_len, pad_value):
     list_data = list_data[-max_len:]
@@ -18,7 +30,7 @@ def get_vocabs(file_paths, addi_file_path):
     speaker_vocab = vocab.UnkVocab()
     emotion_vocab = vocab.Vocab()
     sentiment_vocab = vocab.Vocab()
-    # 保证neutral 在第0类
+
     emotion_vocab.word2index('neutral', train=True)
     # global speaker_vocab, emotion_vocab
     for file_path in file_paths:
@@ -62,6 +74,9 @@ def load_emorynlp_and_builddataset(file_path, train=False):
     sentiment_idxs = []
     pre_dial_id = -1
     max_turns = 0
+
+    # SEP
+
     for row in tqdm(data.iterrows(), desc='processing file {}'.format(file_path)):
         meta = row[1]
         utterance = meta['Utterance'].lower().replace(
@@ -85,8 +100,7 @@ def load_emorynlp_and_builddataset(file_path, train=False):
         pre_dial_id = dialogue_id
         speaker_id = speaker_vocab.word2index(speaker)
         emotion_idx = emotion_vocab.word2index(emotion)
-        token_ids = tokenizer(utterance, add_special_tokens=False)[
-            'input_ids'] + [CONFIG['SEP']]
+        token_ids = tokenizer(utterance, add_special_tokens=False)['input_ids'] + [SEP]
         full_context = []
         if len(utterances) > 0:
             context = utterances[-3:]
@@ -95,23 +109,23 @@ def load_emorynlp_and_builddataset(file_path, train=False):
         full_context += token_ids
         # query
         query = speaker + ' feels <mask>'
-        query_ids = [CONFIG['SEP']] + tokenizer(query, add_special_tokens=False)['input_ids'] + [CONFIG['SEP']]
+        query_ids = [SEP] + tokenizer(query, add_special_tokens=False)['input_ids'] + [SEP]
         full_context += query_ids
 
         full_context = pad_to_len(
-            full_context, CONFIG['max_len'], CONFIG['pad_value'])
+            full_context, 256, 1) # max length, pad value
         # + CONFIG['shift']
         utterances.append(token_ids)
         full_contexts.append(full_context)
         speaker_ids.append(speaker_id)
         emotion_idxs.append(emotion_idx)
 
-    pad_utterance = [CONFIG['SEP']] + tokenizer(
+    pad_utterance = [SEP] + tokenizer(
         "1",
         add_special_tokens=False
-    )['input_ids'] + [CONFIG['SEP']]
+    )['input_ids'] + [SEP]
     pad_utterance = pad_to_len(
-        pad_utterance, CONFIG['max_len'], CONFIG['pad_value'])
+        pad_utterance, 256, 1) # max length, pad value
     # for CRF
     ret_mask = []
     ret_last_turns = []
@@ -186,7 +200,7 @@ def load_meld_and_builddataset(file_path, train=False):
         speaker_id = speaker_vocab.word2index(speaker)
         emotion_idx = emotion_vocab.word2index(emotion)
         token_ids = tokenizer(utterance, add_special_tokens=False)[
-            'input_ids'] + [CONFIG['SEP']]
+            'input_ids'] + [SEP]
         full_context = []
         if len(utterances) > 0:
             context = utterances[-3:]
@@ -199,19 +213,19 @@ def load_meld_and_builddataset(file_path, train=False):
         full_context += query_ids
 
         full_context = pad_to_len(
-            full_context, CONFIG['max_len'], CONFIG['pad_value'])
+            full_context, 256, 1)
         # + CONFIG['shift']
         utterances.append(token_ids)
         full_contexts.append(full_context)
         speaker_ids.append(speaker_id)
         emotion_idxs.append(emotion_idx)
 
-    pad_utterance = [CONFIG['SEP']] + tokenizer(
+    pad_utterance = [SEP] + tokenizer(
         "1",
         add_special_tokens=False
-    )['input_ids'] + [CONFIG['SEP']]
+    )['input_ids'] + [SEP]
     pad_utterance = pad_to_len(
-        pad_utterance, CONFIG['max_len'], CONFIG['pad_value'])
+        pad_utterance, 256, 1)
     # for CRF
     ret_mask = []
     ret_last_turns = []
@@ -481,11 +495,11 @@ if __name__ == '__main__':
                'friends_transcript.json')
     # model = PortraitModel(CONFIG)
     model = CRFModel(numClasses=7, dropout=0.3, bert_path='roberta-base')
-    device = CONFIG['device']
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model.to(device)
-    print('---config---')
-    for k, v in CONFIG.items():
-        print(k, '\t\t\t', v, flush=True)
+    # print('---config---')
+    # for k, v in CONFIG.items():
+    #     print(k, '\t\t\t', v, flush=True)
     if args.finetune:
         lst = os.listdir('./models')
         lst = list(filter(lambda item: item.endswith('.pkl'), lst))
