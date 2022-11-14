@@ -69,7 +69,7 @@ class CRFModel(nn.Module):
 
         sentencesMask = torch.transpose(sentencesMask, dim0=0, dim1=1)
         # check if it runs, if not it may mean speaker and sentence batch size are different
-        speakerIds = torch.transpose(speakerIds.reshape(speakerBatchSize, speakerMaxTurns), dim0=0, dim1=1) 
+        speakerIds = torch.transpose(speakerIds.reshape(sentBatchSize, sentMaxTurns), dim0=0, dim1=1) # 6:55pm changed from speakerBatchSize to sentBatchSize
         lastTurns = torch.transpose(lastTurns, dim0=0, dim1=1)
 
 
