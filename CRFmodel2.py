@@ -36,7 +36,7 @@ class CRFModel(nn.Module):
         speakerInputRowNum = speakerBatchSize*speakerMaxTurns
 
         sentencesReshaped = sentences.reshape(sentInputRowNum, -1)
-        speakerIdsReshaped = speakerIds.reshape(speakerInputRowNum, -1)
+        speakerIdsReshaped = speakerIds.reshape(sentInputRowNum, -1) #changed 6:42pm
 
 
         clsId = torch.ones(speakerIdsReshaped.size(), dtype=speakerIdsReshaped.dtype, \
