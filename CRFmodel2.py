@@ -51,7 +51,7 @@ class CRFModel(nn.Module):
         attentionMask = inputIds
 
         # with torch.no_grad():
-        utteranceEncoded = self.context_encoder(
+        utteranceEncoded = self.encoder(
             input_ids=inputIds,
             attention_mask=attentionMask,
             output_hidden_states=True,
@@ -59,7 +59,7 @@ class CRFModel(nn.Module):
         )['last_hidden_state']
 
 
-        maskPos = torch.sum(input=mask, dim=1, keepdim=False) - 2
+        maskPos = torch.sum(input=attentionMask, dim=1, keepdim=False) - 2
         # change below
         features = utteranceEncoded[torch.arange(maskPos.shape[0]), maskPos, :]
         emissions = self.emission(features)
