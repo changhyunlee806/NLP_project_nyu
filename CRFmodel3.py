@@ -47,10 +47,9 @@ class CRFModel(nn.Module):
         
         # mask is used to avoid/ignore padded values of the input tensor
         # masking indices should be {0: if padded, 1: if not padded}
-        # inputIds[inputIds==self.padValue] = 0 #0
-        # inputIds[inputIds!=self.padValue] = 1 #1
-        # mask = inputIds
-        mask = 1 - (inputIds == (self.padValue)).long()
+        inputIds = torch.where(inputIds == self.padValue, 0, 1)
+        mask = inputIds
+        #mask = 1 - (inputIds == (self.padValue)).long()
         #changed 7:29pm
         
 
