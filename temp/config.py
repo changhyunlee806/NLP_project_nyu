@@ -43,7 +43,7 @@ CONFIG = {
     'num_classes' : 7,
     'wp' : 1,
     'wp_pretrain' : 5,
-    'data_path' : '../MELD/data/MELD/',
+    'data_path' : '../../MELD/data/MELD/',
     'accumulation_steps' : 8,
     'rnn_layers' : 2,
     'tf_rate': 0.8,

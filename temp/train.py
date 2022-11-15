@@ -483,7 +483,9 @@ if __name__ == '__main__':
     random.seed(seed)
     torch.backends.cudnn.benchmark = True
     # torch.autograd.set_detect_anomaly(True)
-    DataLoader.getVocabs(train_data_path, dev_data_path, test_data_path, Constants.DataPaths['additional_vocab'])
+    print(train_data_path)
+    print(Constants.DataPaths['additional_vocab'])
+    DataLoader.getVocabs(train=train_data_path, val=dev_data_path, test=test_data_path, additional=Constants.DataPaths['additional_vocab'])
     # get_vocabs([train_data_path, dev_data_path, test_data_path],
     #            'friends_transcript.json')
     # model = PortraitModel(CONFIG)

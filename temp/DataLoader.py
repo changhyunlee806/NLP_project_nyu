@@ -13,7 +13,7 @@ would be removed after checking
 
 class DataLoader:
 
-    def getVocabs(self, train, val, test, additional): # dev == validation?, additional data?
+    def getVocabs(train, val, test, additional): # dev == validation?, additional data?
         speakerNames = vocab.UnkVocab() # names of speaker > Unk
         emotionVocab = vocab.Vocab()
         sentimentVocab = vocab.Vocab()
@@ -40,9 +40,9 @@ class DataLoader:
             emotionVocab.word2index(emotion, train=True)
 
         # additional
-        file = open(additional)
-        for episodeId in json.load(file):
-            for scene in json.load(file).get(episodeId):
+        additionalData = json.load(open(additional, 'r'))
+        for episodeId in additionalData:
+            for scene in additionalData.get(episodeId):
                 for utterence in scene['utterances']:
                     speakerName = utterence['speakers'][0].lower()
                     speakerNames.word2index(speakerName, train=True)
