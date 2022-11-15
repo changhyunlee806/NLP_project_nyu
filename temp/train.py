@@ -1,6 +1,6 @@
 from config import *
 from CRFmodel import CRFModel
-from DataLoader import DataLoader
+from DataProcessor import DataProcessor
 import Constants
 
 
@@ -485,7 +485,7 @@ if __name__ == '__main__':
     # torch.autograd.set_detect_anomaly(True)
     print(train_data_path)
     print(Constants.DataPaths['additional_vocab'])
-    DataLoader.getVocabs(train=train_data_path, val=dev_data_path, test=test_data_path, additional=Constants.DataPaths['additional_vocab'])
+    DataProcessor.getVocabs(train=train_data_path, val=dev_data_path, test=test_data_path, additional=Constants.DataPaths['additional_vocab'])
     # get_vocabs([train_data_path, dev_data_path, test_data_path],
     #            'friends_transcript.json')
     # model = PortraitModel(CONFIG)

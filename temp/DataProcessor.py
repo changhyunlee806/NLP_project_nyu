@@ -11,7 +11,7 @@ import Constants
 would be removed after checking
 '''
 
-class DataLoader:
+class DataProcessor:
 
     def getVocabs(train, val, test, additional): # dev == validation?, additional data?
         speakerNames = vocab.UnkVocab() # names of speaker > Unk
