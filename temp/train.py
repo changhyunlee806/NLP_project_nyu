@@ -49,10 +49,10 @@ def pad_to_len(list_data, max_len, pad_value):
 
 def load_emorynlp_and_builddataset(file_path, train=False):
     speaker_vocab = vocab.UnkVocab.from_dict(torch.load(
-        speaker_vocab_dict_path
+        Constants.DataPaths['speaker_vocab_path']
     ))
     emotion_vocab = vocab.Vocab.from_dict(torch.load(
-        emotion_vocab_dict_path
+        Constants.DataPaths['emotion_vocab_path']
     ))
     data = pd.read_csv(file_path)
     ret_utterances = []
@@ -149,10 +149,10 @@ def load_emorynlp_and_builddataset(file_path, train=False):
 
 def load_meld_and_builddataset(file_path, train=False):
     speaker_vocab = vocab.UnkVocab.from_dict(torch.load(
-        speaker_vocab_dict_path
+        Constants.DataPaths['speaker_vocab_path']
     ))
     emotion_vocab = vocab.Vocab.from_dict(torch.load(
-        emotion_vocab_dict_path
+        Constants.DataPaths['emotion_vocab_path']
     ))
 
     data = pd.read_csv(file_path)
