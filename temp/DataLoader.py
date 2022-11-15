@@ -5,6 +5,8 @@ import torch
 
 from tqdm import tqdm
 
+import Constants
+
 '''
 would be removed after checking
 '''
@@ -45,12 +47,13 @@ class DataLoader:
                     speakerName = utterence['speakers'][0].lower()
                     speakerNames.word2index(speakerName, train=True)
         speakers = list(speakerNames.prune_by_count(1000).counts.keys())
+        speakerNames = vocab.UnkVocab()
         for speaker in speakers:
             speakerNames.word2index(speaker, train=True)
 
-        torch.save(emotionVocab.to_dict(), 'path')
-        torch.save(speakerNames.to_dict(), 'path')
-        torch.save(sentimentVocab.to_dict(), 'path')
+        torch.save(emotionVocab.to_dict(), Constants.DataPaths['emotion_vocab_path'])
+        torch.save(speakerNames.to_dict(), Constants.DataPaths['speaker_vocab_path'])
+        torch.save(sentimentVocab.to_dict(), Constants.DataPaths['sentiment_vocab_path'])
 
 
 
