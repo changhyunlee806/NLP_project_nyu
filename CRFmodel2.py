@@ -36,7 +36,7 @@ class CRFModel(nn.Module):
         speakerInputRowNum = speakerBatchSize*speakerMaxTurns
 
         sentencesReshaped = sentences.reshape(sentInputRowNum, -1)
-        speakerIdsReshaped = speakerIds.reshape(sentInputRowNum, -1) #changed 6:42pm
+        speakerIdsReshaped = speakerIds.reshape(speakerInputRowNum, -1) #changed 6:42pm
 
 
         clsId = torch.ones(speakerIdsReshaped.size(), dtype=speakerIdsReshaped.dtype, \
@@ -46,8 +46,9 @@ class CRFModel(nn.Module):
         
         # mask is used to avoid/ignore padded values of the input tensor
         # masking indices should be {0: if padded, 1: if not padded}
-        inputIds[inputIds==self.padValue] = 0
-        inputIds[inputIds!=self.padValue] = 1
+        # inputIds[inputIds==self.padValue] = 0 delete
+        # inputIds[inputIds!=self.padValue] = 1 delete
+        inputIds = torch.where(inputIds == self.padValue, 0, 1)
         attentionMask = inputIds
 
         # with torch.no_grad():
