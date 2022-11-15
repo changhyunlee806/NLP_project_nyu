@@ -43,8 +43,15 @@ class CRFModel(nn.Module):
                             layout=speakerIdsReshaped.layout, device=speakerIdsReshaped.device) * self.CLS
         inputIds = torch.concat(tensors=(clsId, sentencesReshaped), dim=1)
         #inputIds = torch.cat((clsId, sentencesReshaped), 1)
+        #mask = 1 - (inputIds == (self.padValue)).long()
+        
+        # mask is used to avoid/ignore padded values of the input tensor
+        # masking indices should be {0: if padded, 1: if not padded}
+        inputIds[inputIds==self.padValue] = 0
+        inputIds[inputIds!=self.padValue] = 1
+        mask = inputIds
         #changed 7:29pm
-        mask = 1 - (inputIds == (self.padValue)).long()
+        
 
         utteranceEncoded = self.encoder(
             input_ids=inputIds,
