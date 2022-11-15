@@ -35,7 +35,7 @@ class CRFModel(nn.Module):
         speakerInputRowNum = speakerBatchSize*speakerMaxTurns
 
         sentencesReshaped = sentences.reshape(sentInputRowNum, -1)
-        speakerIdsReshaped = speakerIds.reshape(sentInputRowNum, -1) #changed 6:42pm
+        speakerIdsReshaped = speakerIds.reshape(speakerInputRowNum, -1) #changed 6:42pm
         #works
 
         #changed
@@ -47,27 +47,31 @@ class CRFModel(nn.Module):
         
         # mask is used to avoid/ignore padded values of the input tensor
         # masking indices should be {0: if padded, 1: if not padded}
-        mask = torch.where(inputIds == self.padValue, 0, 1)
-        print('mask',mask)
-        mask2 = 1 - (inputIds == (self.padValue)).long()
-        print('mask2',mask2)
+        attentionMask = torch.where(inputIds == self.padValue, 0, 1)
         #changed 7:29pm
         
 
         utteranceEncoded = self.encoder(
             input_ids=inputIds,
-            attention_mask=mask,
+            attention_mask=attentionMask,
             output_hidden_states=True,
             return_dict=True
         )['last_hidden_state']
 
-        maskPos = mask.sum(1)-2
+        maskPos = torch.sum(input=attentionMask, dim=1, keepdim=False) - 2
+        # change below
         features = utteranceEncoded[torch.arange(maskPos.shape[0]), maskPos, :]
         emissions = self.emission(features)
-        crfEmissions = emissions.reshape(sentBatchSize, sentMaxTurns, -1).transpose(0, 1) # batchSize, maxTurns
-        sentencesMask = sentencesMask.transpose(0, 1)
-        speakerIds = speakerIds.reshape(sentBatchSize, sentMaxTurns).transpose(0, 1) # batchSize, maxTurns
-        lastTurns = lastTurns.transpose(0, 1)
+        crfEmissions = emissions.reshape(sentBatchSize, sentMaxTurns, -1).transpose(0, 1)
+
+
+
+        sentencesMask = torch.transpose(sentencesMask, dim0=0, dim1=1)
+        # check if it runs, if not it may mean speaker and sentence batch size are different
+        speakerIds = torch.transpose(speakerIds.reshape(speakerBatchSize, speakerMaxTurns), dim0=0, dim1=1) # 6:55pm changed from speakerBatchSize to sentBatchSize
+        lastTurns = torch.transpose(lastTurns, dim0=0, dim1=1)
+
+
 
         # train
         if emotionIdxes is not None:
