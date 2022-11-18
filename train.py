@@ -1,5 +1,5 @@
 from config import *
-from CRFmodel import CRFModel
+from CRFmodel3 import CRFModel
 
 speaker_vocab_dict_path = 'vocabs/speaker_vocab.pkl'
 emotion_vocab_dict_path = 'vocabs/emotion_vocab.pkl'
