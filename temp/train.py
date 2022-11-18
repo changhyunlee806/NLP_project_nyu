@@ -3,12 +3,6 @@ from CRFmodel import CRFModel
 from DataProcessor import DataProcessor
 import Constants
 
-
-# speaker_vocab_dict_path = 'vocabs/speaker_vocab.pkl'
-# emotion_vocab_dict_path = 'vocabs/emotion_vocab.pkl'
-# sentiment_vocab_dict_path = 'vocabs/sentiment_vocab.pkl'
-
-
 def pad_to_len(list_data, max_len, pad_value):
     list_data = list_data[-max_len:]
     len_to_pad = max_len-len(list_data)
@@ -16,36 +10,6 @@ def pad_to_len(list_data, max_len, pad_value):
     list_data.extend(pads)
     return list_data
 
-
-# def get_vocabs(file_paths, addi_file_path):
-#     speaker_vocab = vocab.UnkVocab()
-#     emotion_vocab = vocab.Vocab()
-#     sentiment_vocab = vocab.Vocab()
-#     # 保证neutral 在第0类
-#     emotion_vocab.word2index('neutral', train=True)
-#     # global speaker_vocab, emotion_vocab
-#     for file_path in file_paths:
-#         data = pd.read_csv(file_path)
-#         for row in tqdm(data.iterrows(), desc='get vocab from {}'.format(file_path)):
-#             meta = row[1]
-#             emotion = meta['Emotion'].lower()
-#             emotion_vocab.word2index(emotion, train=True)
-#     additional_data = json.load(open(addi_file_path, 'r'))
-#     for episode_id in additional_data:
-#         for scene in additional_data.get(episode_id):
-#             for utterance in scene['utterances']:
-#                 speaker = utterance['speakers'][0].lower()
-#                 speaker_vocab.word2index(speaker, train=True)
-#     speaker_vocab = speaker_vocab.prune_by_count(1000)
-#     speakers = list(speaker_vocab.counts.keys())
-#     speaker_vocab = vocab.UnkVocab()
-#     for speaker in speakers:
-#         speaker_vocab.word2index(speaker, train=True)
-#
-#     logging.info('total {} speakers'.format(len(speaker_vocab.counts.keys())))
-#     torch.save(emotion_vocab.to_dict(), emotion_vocab_dict_path)
-#     torch.save(speaker_vocab.to_dict(), speaker_vocab_dict_path)
-#     torch.save(sentiment_vocab.to_dict(), sentiment_vocab_dict_path)
 
 def load_emorynlp_and_builddataset(file_path, train=False):
     speaker_vocab = vocab.UnkVocab.from_dict(torch.load(

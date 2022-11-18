@@ -56,6 +56,20 @@ class DataProcessor:
         torch.save(sentimentVocab.to_dict(), Constants.DataPaths['sentiment_vocab_path'])
 
 
+    # def getMELDdata(filePath):
+    #     speakerNames = vocab.UnkVocab.from_dict(torch.load(Constants.DataPaths['speaker_vocab_path']))
+    #     emotionVocab = vocab.Vocab.from_dict(torch.load(Constants.DataPaths['emotion_vocab_path']))
+    #
+    #     meldData = pd.read_csv(filePath)
+    #     for row in tqdm(data.iterrows()):
+    #         meta = row[1]
+    #         utterance = meta['Utterance'].replace('’', '\'').replace("\"", '')
+    #         speakerName = meta['Speaker']
+    #         utterance = speaker + ' says:, ' + utterance
+    #
+    #         emotion = meta['Emotion'].lower()
+
+
 
 
 
