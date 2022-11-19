@@ -290,38 +290,72 @@ def get_paramsgroup(model, warmup=False):
     return params
 
 
+# def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
+
+#     loss_func = torch.nn.CrossEntropyLoss(ignore_index=-1)
+#     sampler = RandomSampler(data)
+#     dataloader = DataLoader(
+#         data,
+#         batch_size=CONFIG['batch_size'],
+#         sampler=sampler,
+#         num_workers=0  # multiprocessing.cpu_count()
+#     )
+#     tq_train = tqdm(total=len(dataloader), position=1)
+#     accumulation_steps = CONFIG['accumulation_steps']
+
+#     for batch_id, batch_data in enumerate(dataloader):
+#         batch_data = [x.to(model.device()) for x in batch_data]
+#         sentences = batch_data[0]
+#         speaker_ids = batch_data[1]
+#         emotion_idxs = batch_data[2]
+#         mask = batch_data[3]
+#         last_turns = batch_data[4]
+#         outputs = model(sentences, mask, speaker_ids, last_turns, emotion_idxs)
+#         loss = outputs
+#         # loss += loss_func(outputs[3], sentiment_idxs)
+#         tq_train.set_description('loss is {:.2f}'.format(loss.item()))
+#         tq_train.update()
+#         loss = loss / accumulation_steps
+#         loss.backward()
+#         if batch_id % accumulation_steps == 0:
+#             optimizer.step()
+#             optimizer.zero_grad()
+#             # torch.cuda.empty_cache()
+#     tq_train.close()
+
+# 창현 버전
 def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
 
     loss_func = torch.nn.CrossEntropyLoss(ignore_index=-1)
-    sampler = RandomSampler(data)
     dataloader = DataLoader(
         data,
         batch_size=CONFIG['batch_size'],
-        sampler=sampler,
+        sampler=RandomSampler(data),
         num_workers=0  # multiprocessing.cpu_count()
     )
-    tq_train = tqdm(total=len(dataloader), position=1)
-    accumulation_steps = CONFIG['accumulation_steps']
 
-    for batch_id, batch_data in enumerate(dataloader):
-        batch_data = [x.to(model.device()) for x in batch_data]
-        sentences = batch_data[0]
-        speaker_ids = batch_data[1]
-        emotion_idxs = batch_data[2]
-        mask = batch_data[3]
-        last_turns = batch_data[4]
-        outputs = model(sentences, mask, speaker_ids, last_turns, emotion_idxs)
-        loss = outputs
-        # loss += loss_func(outputs[3], sentiment_idxs)
-        tq_train.set_description('loss is {:.2f}'.format(loss.item()))
-        tq_train.update()
-        loss = loss / accumulation_steps
+    for batch in dataloader:
+        for i in range(len(batch)):
+            if i == 0:
+                sentences = batch[i].to(model.device())
+                continue
+            elif i==1:
+                speaker_ids = batch[i].to(model.device())
+                continue
+            elif i==2:
+                emotion_idxs = batch[i].to(model.device())
+                continue
+            elif i==3:
+                mask = batch[i].to(model.device())
+                continue
+            elif i==4:
+                last_turns = batch[i].to(model.device())
+                continue
+        loss = model(sentences, mask, speaker_ids, last_turns, emotion_idxs)
+
         loss.backward()
-        if batch_id % accumulation_steps == 0:
-            optimizer.step()
-            optimizer.zero_grad()
-            # torch.cuda.empty_cache()
-    tq_train.close()
+        optimizer.step()
+        optimizer.zero_grad()
 
 
 def test(model, data):
@@ -453,6 +487,7 @@ if __name__ == '__main__':
     parser.add_argument('-acc_step', '--accumulation_steps',
                         default=CONFIG['accumulation_steps'], type=int, required=False)
 
+    # read the arguments from commandline
     args = parser.parse_args()
     CONFIG['data_path'] = args.data_path
     CONFIG['lr'] = args.lr
