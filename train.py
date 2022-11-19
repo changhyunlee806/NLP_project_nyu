@@ -334,7 +334,7 @@ def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
         num_workers=0  # multiprocessing.cpu_count()
     )
 
-    for batch in dataloader:
+    for batch in tqdm(dataloader):
         for i in range(len(batch)):
             if i == 0:
                 sentences = batch[i].to(model.device())
