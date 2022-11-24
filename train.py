@@ -384,9 +384,10 @@ def test(model, data):
         for batch_idx in range(mask.shape[0]):
             for seq_idx in range(mask.shape[1]):
                 if mask[batch_idx][seq_idx]:
-                    print("Output: ", outputs)
-                    print("Batch: ", batch_idx)
-                    print("Seq: ", seq_idx)
+                    print(f'mask value: {mask[batch_idx][seq_idx]}')
+                    #print("Output: ", outputs)
+                    # print("Batch: ", batch_idx)
+                    # print("Seq: ", seq_idx)
                     pred_list.append(outputs[batch_idx][seq_idx])
                     y_true_list.append(emotion_idxs[batch_idx][seq_idx])
         tq_test.update()
