@@ -329,14 +329,17 @@ def test(model, data):
 
 
 def train(model, train_data_path, dev_data_path, test_data_path):
-    if CONFIG['task_name'] == 'meld':
-        devset = load_meld_and_builddataset(dev_data_path)
-        testset = load_meld_and_builddataset(test_data_path)
-        trainset = load_meld_and_builddataset(train_data_path)
-    else:
-        devset = load_emorynlp_and_builddataset(dev_data_path)
-        testset = load_emorynlp_and_builddataset(test_data_path)
-        trainset = load_emorynlp_and_builddataset(train_data_path)
+    # if CONFIG['task_name'] == 'meld':
+    devset = DataProcessor.getMELDdata(dev_data_path)
+    testset = DataProcessor.getMELDdata(test_data_path)
+    trainset = DataProcessor.getMELDdata(train_data_path)
+        # devset = load_meld_and_builddataset(dev_data_path)
+        # testset = load_meld_and_builddataset(test_data_path)
+        # trainset = load_meld_and_builddataset(train_data_path)
+    # else:
+    #     devset = load_emorynlp_and_builddataset(dev_data_path)
+    #     testset = load_emorynlp_and_builddataset(test_data_path)
+    #     trainset = load_emorynlp_and_builddataset(train_data_path)
 
 
     # warmup
