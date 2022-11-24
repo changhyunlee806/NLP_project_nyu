@@ -1,5 +1,6 @@
 from config import *
 from CRFmodel3 import CRFModel
+import itertools
 
 speaker_vocab_dict_path = 'vocabs/speaker_vocab.pkl'
 emotion_vocab_dict_path = 'vocabs/emotion_vocab.pkl'
@@ -357,43 +358,86 @@ def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
         optimizer.step()
         optimizer.zero_grad()
 
+# original
+# def test(model, data):
 
+#     pred_list = []
+#     hidden_pred_list = []
+#     selection_list = []
+#     y_true_list = []
+#     model.eval()
+#     sampler = SequentialSampler(data)
+#     dataloader = DataLoader(
+#         data,
+#         batch_size=CONFIG['batch_size'],
+#         sampler=sampler,
+#         num_workers=0,  # multiprocessing.cpu_count()
+#     )
+#     tq_test = tqdm(total=len(dataloader), desc="testing", position=2)
+#     for batch_id, batch_data in enumerate(dataloader):
+#         batch_data = [x.to(model.device()) for x in batch_data]
+#         sentences = batch_data[0]
+#         speaker_ids = batch_data[1]
+#         emotion_idxs = batch_data[2].cpu().numpy().tolist()
+#         mask = batch_data[3]
+#         last_turns = batch_data[4]
+#         outputs = model(sentences, mask, speaker_ids, last_turns, None)
+#         for batch_idx in range(mask.shape[0]):
+#             for seq_idx in range(mask.shape[1]):
+#                 if mask[batch_idx][seq_idx]:
+#                     print(f'mask value: {mask[batch_idx][seq_idx]}')
+#                     #print("Output: ", outputs)
+#                     # print("Batch: ", batch_idx)
+#                     # print("Seq: ", seq_idx)
+#                     pred_list.append(outputs[batch_idx][seq_idx])
+#                     y_true_list.append(emotion_idxs[batch_idx][seq_idx])
+#         tq_test.update()
+#     F1 = f1_score(y_true=y_true_list, y_pred=pred_list, average='weighted')
+#     model.train()
+#     return F1
+
+# 창현 버전
 def test(model, data):
 
-    pred_list = []
-    hidden_pred_list = []
-    selection_list = []
-    y_true_list = []
+    yPred = []
+    yTrue = []
     model.eval()
     sampler = SequentialSampler(data)
-    dataloader = DataLoader(
-        data,
-        batch_size=CONFIG['batch_size'],
-        sampler=sampler,
-        num_workers=0,  # multiprocessing.cpu_count()
-    )
-    tq_test = tqdm(total=len(dataloader), desc="testing", position=2)
-    for batch_id, batch_data in enumerate(dataloader):
-        batch_data = [x.to(model.device()) for x in batch_data]
-        sentences = batch_data[0]
-        speaker_ids = batch_data[1]
-        emotion_idxs = batch_data[2].cpu().numpy().tolist()
-        mask = batch_data[3]
-        last_turns = batch_data[4]
-        outputs = model(sentences, mask, speaker_ids, last_turns, None)
-        for batch_idx in range(mask.shape[0]):
-            for seq_idx in range(mask.shape[1]):
-                if mask[batch_idx][seq_idx]:
-                    print(f'mask value: {mask[batch_idx][seq_idx]}')
-                    #print("Output: ", outputs)
-                    # print("Batch: ", batch_idx)
-                    # print("Seq: ", seq_idx)
-                    pred_list.append(outputs[batch_idx][seq_idx])
-                    y_true_list.append(emotion_idxs[batch_idx][seq_idx])
-        tq_test.update()
-    F1 = f1_score(y_true=y_true_list, y_pred=pred_list, average='weighted')
+    dataloader = DataLoader(data, batch_size=CONFIG['batch_size'], sampler=sampler, num_workers=0)
+
+    for batch in dataloader:
+        for i in range(len(batch)):
+            if i == 0:
+                sentences = batch[i].to(model.device())
+                continue
+            elif i==1:
+                speaker_ids = batch[i].to(model.device())
+                continue
+            elif i==2:
+                emotion_idxs = batch[i].to(model.device())
+                continue
+            elif i==3:
+                mask = batch[i].to(model.device())
+                continue
+            elif i==4:
+                last_turns = batch[i].to(model.device())
+                continue
+        out = model(sentences, mask, speaker_ids, last_turns, None)
+
+        maskBatch = np.arange(0, mask.shape[0])
+        maskSequence = np.arange(0, mask.shape[1])
+        
+        for batch1, sequence1 in itertools.product(maskBatch, maskSequence):
+            # Only if not padded (aka. there is information) -> mask==1 (True), APPEND
+            if bool(mask[batch][sequence1]) != True: 
+                continue
+            else:
+                yPred.append(out[batch1][sequence1])
+                yTrue.append(emotion_idxs[batch1][sequence1])
+
+    score = f1_score(y_pred=yPred, y_true=yTrue, average='weighted')
     model.train()
-    return F1
+    return score
 
 
 def train(model, train_data_path, dev_data_path, test_data_path):
