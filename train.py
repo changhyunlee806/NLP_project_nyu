@@ -288,6 +288,7 @@ def get_paramsgroup(model, warmup=False):
     if warmup:
         return warmup_params
     params = sorted(params, key=lambda x: x['lr'], reverse=True)
+    print('params: #################', params)
     return params
 
 
