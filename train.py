@@ -429,7 +429,7 @@ def test(model, data):
         
         for batch1, sequence1 in itertools.product(maskBatch, maskSequence):
             # Only if not padded (aka. there is information) -> mask==1 (True), APPEND
-            if bool(mask[batch][sequence1]) != True: 
+            if bool(mask[batch1][sequence1]) != True: 
                 continue
             else:
                 yPred.append(out[batch1][sequence1])
