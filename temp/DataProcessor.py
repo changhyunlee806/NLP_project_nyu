@@ -147,15 +147,16 @@ class DataProcessor:
             allMasks.append(mask)
             allUtterances[dialId] = utterances
 
-            last_turns = [-1] * maxTurns
-            for turn_id in range(maxTurns):
-                curr_spk = allSpeakerIds[dialId][turn_id]
-                if curr_spk == 0:
+            lastTurns = [-1 for _ in range(maxTurns)]
+            for turnId in range(maxTurns):
+                curSpeaker = allSpeakerIds[dialId][turnId]
+                if curSpeaker == 0:
                     break
-                for idx in range(0, turn_id):
-                    if curr_spk == allSpeakerIds[dialId][idx]:
-                        last_turns[turn_id] = idx
-            allLastTurns.append(last_turns)
+                for idx in range(turnId-1, -1, -1):
+                    if curSpeaker == allSpeakerIds[dialId][idx]:
+                        lastTurns[turnId] = idx
+                        break
+            allLastTurns.append(lastTurns)
 
         return TensorDataset(
             torch.LongTensor(allUtterances),
