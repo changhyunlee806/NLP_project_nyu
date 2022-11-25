@@ -1,249 +1,12 @@
 from config import *
 from CRFmodel3 import CRFModel
 import itertools
+from DataProcessor import DataProcessor
+import Constants
 
 speaker_vocab_dict_path = 'vocabs/speaker_vocab.pkl'
 emotion_vocab_dict_path = 'vocabs/emotion_vocab.pkl'
 sentiment_vocab_dict_path = 'vocabs/sentiment_vocab.pkl'
-
-
-def pad_to_len(list_data, max_len, pad_value):
-    list_data = list_data[-max_len:]
-    len_to_pad = max_len - len(list_data)
-    pads = [pad_value] * len_to_pad
-    list_data.extend(pads)
-    return list_data
-
-
-def get_vocabs(file_paths, addi_file_path):
-    speaker_vocab = vocab.UnkVocab()
-    emotion_vocab = vocab.Vocab()
-    sentiment_vocab = vocab.Vocab()
-    # 保证neutral 在第0类
-    emotion_vocab.word2index('neutral', train=True)
-    # global speaker_vocab, emotion_vocab
-    for file_path in file_paths:
-        data = pd.read_csv(file_path)
-        for row in tqdm(data.iterrows(), desc='get vocab from {}'.format(file_path)):
-            meta = row[1]
-            emotion = meta['Emotion'].lower()
-            emotion_vocab.word2index(emotion, train=True)
-    additional_data = json.load(open(addi_file_path, 'r'))
-    for episode_id in additional_data:
-        for scene in additional_data.get(episode_id):
-            for utterance in scene['utterances']:
-                speaker = utterance['speakers'][0].lower()
-                speaker_vocab.word2index(speaker, train=True)
-    speaker_vocab = speaker_vocab.prune_by_count(1000)
-    speakers = list(speaker_vocab.counts.keys())
-    speaker_vocab = vocab.UnkVocab()
-    for speaker in speakers:
-        speaker_vocab.word2index(speaker, train=True)
-
-    logging.info('total {} speakers'.format(len(speaker_vocab.counts.keys())))
-    torch.save(emotion_vocab.to_dict(), emotion_vocab_dict_path)
-    torch.save(speaker_vocab.to_dict(), speaker_vocab_dict_path)
-    torch.save(sentiment_vocab.to_dict(), sentiment_vocab_dict_path)
-
-
-# def load_emorynlp_and_builddataset(file_path, train=False):
-#     speaker_vocab = vocab.UnkVocab.from_dict(torch.load(
-#         speaker_vocab_dict_path
-#     ))
-#     emotion_vocab = vocab.Vocab.from_dict(torch.load(
-#         emotion_vocab_dict_path
-#     ))
-#     data = pd.read_csv(file_path)
-#     ret_utterances = []
-#     ret_speaker_ids = []
-#     ret_emotion_idxs = []
-#     utterances = []
-#     full_contexts = []
-#     speaker_ids = []
-#     emotion_idxs = []
-#     sentiment_idxs = []
-#     pre_dial_id = -1
-#     max_turns = 0
-#     for row in tqdm(data.iterrows(), desc='processing file {}'.format(file_path)):
-#         meta = row[1]
-#         utterance = meta['Utterance'].lower().replace(
-#             '’', '\'').replace("\"", '')
-#         speaker = meta['Speaker'].lower()
-#         utterance = speaker + ' says:, ' + utterance
-#         emotion = meta['Emotion'].lower()
-#         dialogue_id = meta['Scene_ID']
-#         utterance_id = meta['Utterance_ID']
-#         if pre_dial_id == -1:
-#             pre_dial_id = dialogue_id
-#         if dialogue_id != pre_dial_id:
-#             ret_utterances.append(full_contexts)
-#             ret_speaker_ids.append(speaker_ids)
-#             ret_emotion_idxs.append(emotion_idxs)
-#             max_turns = max(max_turns, len(utterances))
-#             utterances = []
-#             full_contexts = []
-#             speaker_ids = []
-#             emotion_idxs = []
-#         pre_dial_id = dialogue_id
-#         speaker_id = speaker_vocab.word2index(speaker)
-#         emotion_idx = emotion_vocab.word2index(emotion)
-#         token_ids = tokenizer(utterance, add_special_tokens=False)[
-#             'input_ids'] + [CONFIG['SEP']]
-#         full_context = []
-#         if len(utterances) > 0:
-#             context = utterances[-3:]
-#             for pre_uttr in context:
-#                 full_context += pre_uttr
-#         full_context += token_ids
-#         # query
-#         query = speaker + ' feels <mask>'
-#         query_ids = [CONFIG['SEP']] + tokenizer(query, add_special_tokens=False)['input_ids'] + [CONFIG['SEP']]
-#         full_context += query_ids
-#
-#         full_context = pad_to_len(
-#             full_context, CONFIG['max_len'], CONFIG['pad_value'])
-#         # + CONFIG['shift']
-#         utterances.append(token_ids)
-#         full_contexts.append(full_context)
-#         speaker_ids.append(speaker_id)
-#         emotion_idxs.append(emotion_idx)
-#
-#     pad_utterance = [CONFIG['SEP']] + tokenizer(
-#         "1",
-#         add_special_tokens=False
-#     )['input_ids'] + [CONFIG['SEP']]
-#     pad_utterance = pad_to_len(
-#         pad_utterance, CONFIG['max_len'], CONFIG['pad_value'])
-#     # for CRF
-#     ret_mask = []
-#     ret_last_turns = []
-#     for dial_id, utterances in tqdm(enumerate(ret_utterances), desc='build dataset'):
-#         mask = [1] * len(utterances)
-#         while len(utterances) < max_turns:
-#             utterances.append(pad_utterance)
-#             ret_emotion_idxs[dial_id].append(-1)
-#             ret_speaker_ids[dial_id].append(0)
-#             mask.append(0)
-#         ret_mask.append(mask)
-#         ret_utterances[dial_id] = utterances
-#
-#         last_turns = [-1] * max_turns
-#         for turn_id in range(max_turns):
-#             curr_spk = ret_speaker_ids[dial_id][turn_id]
-#             if curr_spk == 0:
-#                 break
-#             for idx in range(0, turn_id):
-#                 if curr_spk == ret_speaker_ids[dial_id][idx]:
-#                     last_turns[turn_id] = idx
-#         ret_last_turns.append(last_turns)
-#     dataset = TensorDataset(
-#         torch.LongTensor(ret_utterances),
-#         torch.LongTensor(ret_speaker_ids),
-#         torch.LongTensor(ret_emotion_idxs),
-#         torch.ByteTensor(ret_mask),
-#         torch.LongTensor(ret_last_turns)
-#     )
-#     return dataset
-
-
-def load_meld_and_builddataset(file_path, train=False):
-    speaker_vocab = vocab.UnkVocab.from_dict(torch.load(
-        speaker_vocab_dict_path
-    ))
-    emotion_vocab = vocab.Vocab.from_dict(torch.load(
-        emotion_vocab_dict_path
-    ))
-
-    data = pd.read_csv(file_path)
-    ret_utterances = []
-    ret_speaker_ids = []
-    ret_emotion_idxs = []
-    utterances = []
-    full_contexts = []
-    speaker_ids = []
-    emotion_idxs = []
-    pre_dial_id = -1
-    max_turns = 0
-    for row in tqdm(data.iterrows(), desc='processing file {}'.format(file_path)):
-        meta = row[1]
-        utterance = meta['Utterance'].replace(
-            '’', '\'').replace("\"", '')
-        speaker = meta['Speaker']
-        utterance = speaker + ' says:, ' + utterance
-        emotion = meta['Emotion'].lower()
-        dialogue_id = meta['Dialogue_ID']
-        utterance_id = meta['Utterance_ID']
-        if pre_dial_id == -1:
-            pre_dial_id = dialogue_id
-        if dialogue_id != pre_dial_id:
-            ret_utterances.append(full_contexts)
-            ret_speaker_ids.append(speaker_ids)
-            ret_emotion_idxs.append(emotion_idxs)
-            max_turns = max(max_turns, len(utterances))
-            utterances = []
-            full_contexts = []
-            speaker_ids = []
-            emotion_idxs = []
-        pre_dial_id = dialogue_id
-        speaker_id = speaker_vocab.word2index(speaker)
-        emotion_idx = emotion_vocab.word2index(emotion)
-        token_ids = tokenizer(utterance, add_special_tokens=False)[
-                        'input_ids'] + [CONFIG['SEP']]
-        full_context = []
-        if len(utterances) > 0:
-            context = utterances[-3:]
-            for pre_uttr in context:
-                full_context += pre_uttr
-        full_context += token_ids
-        # query
-        query = 'Now ' + speaker + ' feels <mask>'
-        query_ids = tokenizer(query, add_special_tokens=False)['input_ids'] + [CONFIG['SEP']]
-        full_context += query_ids
-
-        full_context = pad_to_len(
-            full_context, CONFIG['max_len'], CONFIG['pad_value'])
-        # + CONFIG['shift']
-        utterances.append(token_ids)
-        full_contexts.append(full_context)
-        speaker_ids.append(speaker_id)
-        emotion_idxs.append(emotion_idx)
-
-    pad_utterance = [CONFIG['SEP']] + tokenizer(
-        "1",
-        add_special_tokens=False
-    )['input_ids'] + [CONFIG['SEP']]
-    pad_utterance = pad_to_len(
-        pad_utterance, CONFIG['max_len'], CONFIG['pad_value'])
-    # for CRF
-    ret_mask = []
-    ret_last_turns = []
-    for dial_id, utterances in tqdm(enumerate(ret_utterances), desc='build dataset'):
-        mask = [1] * len(utterances)
-        while len(utterances) < max_turns:
-            utterances.append(pad_utterance)
-            ret_emotion_idxs[dial_id].append(-1)
-            ret_speaker_ids[dial_id].append(0)
-            mask.append(0)
-        ret_mask.append(mask)
-        ret_utterances[dial_id] = utterances
-
-        last_turns = [-1] * max_turns
-        for turn_id in range(max_turns):
-            curr_spk = ret_speaker_ids[dial_id][turn_id]
-            if curr_spk == 0:
-                break
-            for idx in range(0, turn_id):
-                if curr_spk == ret_speaker_ids[dial_id][idx]:
-                    last_turns[turn_id] = idx
-        ret_last_turns.append(last_turns)
-    dataset = TensorDataset(
-        torch.LongTensor(ret_utterances),
-        torch.LongTensor(ret_speaker_ids),
-        torch.LongTensor(ret_emotion_idxs),
-        torch.ByteTensor(ret_mask),
-        torch.LongTensor(ret_last_turns)
-    )
-    return dataset
 
 
 def get_paramsgroup(model, warmup=False):
@@ -294,39 +57,6 @@ def get_paramsgroup(model, warmup=False):
     return params
 
 
-# def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
-
-#     loss_func = torch.nn.CrossEntropyLoss(ignore_index=-1)
-#     sampler = RandomSampler(data)
-#     dataloader = DataLoader(
-#         data,
-#         batch_size=CONFIG['batch_size'],
-#         sampler=sampler,
-#         num_workers=0  # multiprocessing.cpu_count()
-#     )
-#     tq_train = tqdm(total=len(dataloader), position=1)
-#     accumulation_steps = CONFIG['accumulation_steps']
-
-#     for batch_id, batch_data in enumerate(dataloader):
-#         batch_data = [x.to(model.device()) for x in batch_data]
-#         sentences = batch_data[0]
-#         speaker_ids = batch_data[1]
-#         emotion_idxs = batch_data[2]
-#         mask = batch_data[3]
-#         last_turns = batch_data[4]
-#         outputs = model(sentences, mask, speaker_ids, last_turns, emotion_idxs)
-#         loss = outputs
-#         # loss += loss_func(outputs[3], sentiment_idxs)
-#         tq_train.set_description('loss is {:.2f}'.format(loss.item()))
-#         tq_train.update()
-#         loss = loss / accumulation_steps
-#         loss.backward()
-#         if batch_id % accumulation_steps == 0:
-#             optimizer.step()
-#             optimizer.zero_grad()
-#             # torch.cuda.empty_cache()
-#     tq_train.close()
-
 # 창현 버전
 def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
     loss_func = torch.nn.CrossEntropyLoss(ignore_index=-1)
@@ -360,44 +90,6 @@ def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
         optimizer.step()
         optimizer.zero_grad()
 
-
-# original
-# def test(model, data):
-
-#     pred_list = []
-#     hidden_pred_list = []
-#     selection_list = []
-#     y_true_list = []
-#     model.eval()
-#     sampler = SequentialSampler(data)
-#     dataloader = DataLoader(
-#         data,
-#         batch_size=CONFIG['batch_size'],
-#         sampler=sampler,
-#         num_workers=0,  # multiprocessing.cpu_count()
-#     )
-#     tq_test = tqdm(total=len(dataloader), desc="testing", position=2)
-#     for batch_id, batch_data in enumerate(dataloader):
-#         batch_data = [x.to(model.device()) for x in batch_data]
-#         sentences = batch_data[0]
-#         speaker_ids = batch_data[1]
-#         emotion_idxs = batch_data[2].cpu().numpy().tolist()
-#         mask = batch_data[3]
-#         last_turns = batch_data[4]
-#         outputs = model(sentences, mask, speaker_ids, last_turns, None)
-#         for batch_idx in range(mask.shape[0]):
-#             for seq_idx in range(mask.shape[1]):
-#                 if mask[batch_idx][seq_idx]:
-#                     print(f'mask value: {mask[batch_idx][seq_idx]}')
-#                     #print("Output: ", outputs)
-#                     # print("Batch: ", batch_idx)
-#                     # print("Seq: ", seq_idx)
-#                     pred_list.append(outputs[batch_idx][seq_idx])
-#                     y_true_list.append(emotion_idxs[batch_idx][seq_idx])
-#         tq_test.update()
-#     F1 = f1_score(y_true=y_true_list, y_pred=pred_list, average='weighted')
-#     model.train()
-#     return F1
 
 # 창현 버전
 def test(model, data):
@@ -442,15 +134,10 @@ def test(model, data):
     return score
 
 
-def train(model, train_data_path, dev_data_path, test_data_path):
-    if CONFIG['task_name'] == 'meld':
-        devset = load_meld_and_builddataset(dev_data_path)
-        testset = load_meld_and_builddataset(test_data_path)
-        trainset = load_meld_and_builddataset(train_data_path)
-    else:
-        devset = load_emorynlp_and_builddataset(dev_data_path)
-        testset = load_emorynlp_and_builddataset(test_data_path)
-        trainset = load_emorynlp_and_builddataset(train_data_path)
+def train(model, train_data_path, dev_data_path, test_data_path, dataProcessor):
+    devset = dataProcessor.getMELDdata(dev_data_path)
+    testset = dataProcessor.getMELDdata(test_data_path)
+    trainset = dataProcessor.getMELDdata(train_data_path)
 
     # warmup
     optimizer = torch.optim.AdamW(get_paramsgroup(model, warmup=True))
@@ -549,10 +236,7 @@ if __name__ == '__main__':
     train_data_path = os.path.join(CONFIG['data_path'], 'train_sent_emo.csv')
     test_data_path = os.path.join(CONFIG['data_path'], 'test_sent_emo.csv')
     dev_data_path = os.path.join(CONFIG['data_path'], 'dev_sent_emo.csv')
-    if args.task_name == 'emorynlp':
-        train_data_path = os.path.join(CONFIG['data_path'], 'emorynlp_train_final.csv')
-        test_data_path = os.path.join(CONFIG['data_path'], 'emorynlp_test_final.csv')
-        dev_data_path = os.path.join(CONFIG['data_path'], 'emorynlp_dev_final.csv')
+
     os.makedirs('vocabs', exist_ok=True)
     os.makedirs('models', exist_ok=True)
     seed = 1024
@@ -561,8 +245,8 @@ if __name__ == '__main__':
     random.seed(seed)
     torch.backends.cudnn.benchmark = True
     # torch.autograd.set_detect_anomaly(True)
-    get_vocabs([train_data_path, dev_data_path, test_data_path],
-               'friends_transcript.json')
+    dataProcessor = DataProcessor('roberta-base')
+    dataProcessor.getVocabs(train_data_path, dev_data_path, test_data_path, Constants.DataPaths['additional_vocab'])
     # model = PortraitModel(CONFIG)
     model = CRFModel(numClasses=7, dropout=0.3, bert_path='roberta-base')
     device = CONFIG['device']
@@ -578,11 +262,9 @@ if __name__ == '__main__':
         print('checkpoint {} is loaded'.format(
             os.path.join('models', lst[-1])), flush=True)
     if args.train:
-        train(model, train_data_path, dev_data_path, test_data_path)
+        train(model, train_data_path, dev_data_path, test_data_path, dataProcessor)
     if args.test:
         # testset = load_meld_and_builddataset(dev_data_path)
-        if args.task_name == 'emorynlp':
-            testset = load_emorynlp_and_builddataset(test_data_path)
         if args.task_name == 'meld':
             testset = load_meld_and_builddataset(test_data_path)
         best_f1 = test(model, testset)
