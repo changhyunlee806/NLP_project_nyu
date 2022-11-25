@@ -123,7 +123,7 @@ class DataProcessor:
             fullContent.extend(queryIds)
 
             # TODO pad to len
-            fullContent = self.padByLength(fullContent, maxLen)
+            fullContent = self.padByLength(fullContent, Constants.MAX_LEN)
             fullContents.append(fullContent)
             utterances.append(tokenIds)
             speakerIds.append(speakerNameIdx)
@@ -133,7 +133,7 @@ class DataProcessor:
 
         # TODO add pad to len
         padUtterance = [self.SEP] + self.tokenizer("1", add_special_tokens=False)['input_ids'] + [self.SEP]
-        padUtterance = self.padByLength(padUtterance, maxLen)
+        padUtterance = self.padByLength(padUtterance, Constants.MAX_LEN)
 
         dialogueId = 0
         while dialogueId < len(allUtterances):
