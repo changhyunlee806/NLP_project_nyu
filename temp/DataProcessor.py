@@ -23,7 +23,8 @@ class DataProcessor:
 
     def padByLength(self, sentence, maxLen):
         sentence = sentence[-maxLen:]
-        sentence += [Constants.PAD] * (maxLen - len(sentence))
+        pads = [Constants.PAD] * (maxLen - len(sentence))
+        sentence.extend(pads)
         return sentence
 
 
