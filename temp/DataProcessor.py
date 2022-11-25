@@ -72,7 +72,7 @@ class DataProcessor:
 
 
     # mask: 없으면 1, 있으면 0 > 없는 곳을 알려주는
-    def getMELDdata(self, file_path, train=False):
+    def getMELDdata(self, file_path):
 
         allUtterances, allSpeakerIds, allEmotionIdxes, allMasks, allLastTurns = [], [], [], [], []
 
@@ -83,6 +83,7 @@ class DataProcessor:
 
         utterances, fullContents = [], []
         speakerIds, emotionIdxes = [], []
+
         prevDialogueId = meldData.iloc[0]['Dialogue_ID']
         maxTurns = 0
         for row in tqdm(meldData.iterrows()):
@@ -93,8 +94,6 @@ class DataProcessor:
             emotion = meta['Emotion'].lower()
             dialogueId, utteranceId = meta['Dialogue_ID'], meta['Utterance_ID']
 
-            # if prevDialogueId == -1:
-            #     prevDialogueId = dialogueId
             if dialogueId != prevDialogueId:
                 allUtterances.append(fullContents)
                 fullContents = []
@@ -110,13 +109,13 @@ class DataProcessor:
             emotionIdx = emotionVocab.word2index(emotion)
             tokenIds = self.tokenizer(utterance, add_special_tokens=False)['input_ids'] + [self.SEP]
             fullContent = []
+
             if len(utterances) > 0:
                 context = utterances[-3:]
-                #fullContent.extend(context)
                 for pre_uttr in context:
                     fullContent += pre_uttr
             fullContent += tokenIds
-            # query
+
             query = 'Now ' + speaker + ' feels <mask>'
             queryIds = self.tokenizer(query, add_special_tokens=False)['input_ids'] + [self.SEP]
             fullContent += queryIds
@@ -133,8 +132,6 @@ class DataProcessor:
         for dialId in range(0, len(allUtterances)):
             utterances = allUtterances[dialId]
             mask = [1 for _ in range(len(utterances))]
-        #for dialId, utterances in tqdm(enumerate(allUtterances), desc='build dataset'):
-        #    mask = [1] * len(utterances)
 
             length = len(utterances)
             while length < maxTurns:
@@ -148,10 +145,11 @@ class DataProcessor:
             allUtterances[dialId] = utterances
 
             lastTurns = [-1 for _ in range(maxTurns)]
-            for turnId in range(maxTurns):
+            for turnId in range(0, maxTurns):
                 curSpeaker = allSpeakerIds[dialId][turnId]
                 if curSpeaker == 0:
                     break
+
                 for idx in range(turnId-1, -1, -1):
                     if curSpeaker == allSpeakerIds[dialId][idx]:
                         lastTurns[turnId] = idx
