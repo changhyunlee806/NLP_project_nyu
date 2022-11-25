@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import torch
 from transformers import AutoTokenizer
-
+from torch.utils.data import TensorDataset
 from tqdm import tqdm
 
 import Constants
@@ -83,7 +83,8 @@ class DataProcessor:
         speakerIds, emtionIdxes = [], []
 
         maxLen = 0
-        prevDialogueId = meldData[0][1]['Dialogue_ID']
+        print('meldData: ', meldData.iloc[0])
+        prevDialogueId = meldData.iloc[0]['Dialogue_ID']
         for row in tqdm(meldData.iterrows()):
             meta = row[1]
             utterance = meta['Utterance'].replace('’', '\'').replace("\"", '')
@@ -104,7 +105,7 @@ class DataProcessor:
 
             speakerNameIdx = speakerNames.word2index(speakerName)
             emotionIdx = emotionVocab.word2index(emotion)
-            tokenIds = self.tokenizer(utterance, add_special_tokens=False)['input_ids'] + self.SEP
+            tokenIds = self.tokenizer(utterance, add_special_tokens=False)['input_ids'] + [self.SEP]
 
             fullContent = []
             if len(utterances):
@@ -116,7 +117,8 @@ class DataProcessor:
 
             # TODO change to question
             query = 'Now ' + speakerName + ' feels <mask>'
-            queryIds = self.tokenizer(query, add_special_tokens=False)['input_ids'].extend(self.SEP)
+            queryIds = self.tokenizer(query, add_special_tokens=False)['input_ids']
+            queryIds.extend([self.SEP])
             fullContent.extend(queryIds)
 
             # TODO pad to len
@@ -129,7 +131,7 @@ class DataProcessor:
             prevDialogueId = dialogueId
 
         # TODO add pad to len
-        padUtterance = self.SEP + self.tokenizer("1", add_special_tokens=False)['input_idx'] + self.SEP
+        padUtterance = [self.SEP] + self.tokenizer("1", add_special_tokens=False)['input_ids'] + [self.SEP]
         padUtterance = self.padByLength(padUtterance, maxLen)
 
         dialogueId = 0
@@ -158,9 +160,10 @@ class DataProcessor:
                         lastTurns[turnId] = idx
                         break
             allLastTurns.append(lastTurns)
+            dialogueId += 1
 
         return TensorDataset(
-            torch.LongTensor(allUtterances),
+            #torch.LongTensor(allUtterances),
             torch.LongTensor(allSpeakerIds),
             torch.LongTensor(allEmotionIdxes),
             torch.ByteTensor(allMask),
