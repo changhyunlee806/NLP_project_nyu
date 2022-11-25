@@ -111,8 +111,8 @@ class DataProcessor:
             if len(utterances):
                 # TODO check preUttr
                 fullContent += utterances[-3:]
-                # for preUttr in utterances[-3:]:
-                #     fullContents.extend(preUttr)
+                for preUttr in utterances[-3:]:
+                    fullContent.extend(preUttr)
             fullContent.extend(tokenIds)
 
             # TODO change to question
@@ -163,7 +163,7 @@ class DataProcessor:
             dialogueId += 1
 
         return TensorDataset(
-            #torch.LongTensor(allUtterances),
+            torch.LongTensor(allUtterances),
             torch.LongTensor(allSpeakerIds),
             torch.LongTensor(allEmotionIdxes),
             torch.ByteTensor(allMask),
