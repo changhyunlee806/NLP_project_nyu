@@ -108,22 +108,22 @@ class DataProcessor:
 
             speakerId = speakerNames.word2index(speaker)
             emotionIdx = emotionVocab.word2index(emotion)
-            token_ids = self.tokenizer(utterance, add_special_tokens=False)['input_ids'] + [self.SEP]
-            full_context = []
+            tokenIds = self.tokenizer(utterance, add_special_tokens=False)['input_ids'] + [self.SEP]
+            fullContent = []
             if len(utterances) > 0:
                 context = utterances[-3:]
-                for pre_uttr in context:
-                    full_context += pre_uttr
-            full_context += token_ids
+                fullContent.extend(context)
+                # for pre_uttr in context:
+                #     fullContent += pre_uttr
+            fullContent += tokenIds
             # query
             query = 'Now ' + speaker + ' feels <mask>'
-            query_ids = self.tokenizer(query, add_special_tokens=False)['input_ids'] + [self.SEP]
-            full_context += query_ids
+            queryIds = self.tokenizer(query, add_special_tokens=False)['input_ids'] + [self.SEP]
+            fullContent += queryIds
 
-            full_context = self.padByLength(full_context, Constants.MAX_LEN)
-            # + CONFIG['shift']
-            utterances.append(token_ids)
-            fullContents.append(full_context)
+            fullContent = self.padByLength(fullContent, Constants.MAX_LEN)
+            utterances.append(tokenIds)
+            fullContents.append(fullContent)
             speakerIds.append(speakerId)
             emotionIdxes.append(emotionIdx)
 
