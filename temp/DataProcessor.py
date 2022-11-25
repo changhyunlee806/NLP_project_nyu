@@ -72,100 +72,101 @@ class DataProcessor:
 
 
     # mask: 없으면 1, 있으면 0 > 없는 곳을 알려주는
-    def getMELDdata(self, filePath):
+    def getMELDdata(self, file_path, train=False):
+        speaker_vocab = vocab.UnkVocab.from_dict(torch.load(
+            Constants.DataPaths['speaker_vocab_path']
+        ))
+        emotion_vocab = vocab.Vocab.from_dict(torch.load(
+            Constants.DataPaths['emotion_vocab_path']
+        ))
 
-        allUtterances, allSpeakerIds, allEmotionIdxes, allMask, allLastTurns = [], [], [], [], []
-
-        speakerNames = vocab.UnkVocab.from_dict(torch.load(Constants.DataPaths['speaker_vocab_path']))
-        emotionVocab = vocab.Vocab.from_dict(torch.load(Constants.DataPaths['emotion_vocab_path']))
-        meldData = pd.read_csv(filePath)
-
-        utterances, fullContents = [], []
-        speakerIds, emtionIdxes = [], []
-
-        maxLen = 0
-        print('meldData: ', meldData.iloc[0])
-        prevDialogueId = meldData.iloc[0]['Dialogue_ID']
-        for row in tqdm(meldData.iterrows()):
+        data = pd.read_csv(file_path)
+        ret_utterances = []
+        ret_speaker_ids = []
+        ret_emotion_idxs = []
+        utterances = []
+        full_contexts = []
+        speaker_ids = []
+        emotion_idxs = []
+        pre_dial_id = -1
+        max_turns = 0
+        for row in tqdm(data.iterrows(), desc='processing file {}'.format(file_path)):
             meta = row[1]
-            utterance = meta['Utterance'].replace('’', '\'').replace("\"", '')
-            speakerName = meta['Speaker']
-            utterance = speakerName + ' says:, ' + utterance
+            utterance = meta['Utterance'].replace(
+                '’', '\'').replace("\"", '')
+            speaker = meta['Speaker']
+            utterance = speaker + ' says:, ' + utterance
             emotion = meta['Emotion'].lower()
-            dialogueId, utteranceId = meta['Dialogue_ID'], meta['Utterance_ID']
-
-            if dialogueId != prevDialogueId:
-                allUtterances.append(fullContents)
-                fullContents = []
-                allSpeakerIds.append(speakerIds)
-                speakerIds = []
-                allEmotionIdxes.append(emtionIdxes)
-                emtionIdxes = []
-                maxLen = max(maxLen, len(utterances))
+            dialogue_id = meta['Dialogue_ID']
+            utterance_id = meta['Utterance_ID']
+            if pre_dial_id == -1:
+                pre_dial_id = dialogue_id
+            if dialogue_id != pre_dial_id:
+                ret_utterances.append(full_contexts)
+                ret_speaker_ids.append(speaker_ids)
+                ret_emotion_idxs.append(emotion_idxs)
+                max_turns = max(max_turns, len(utterances))
                 utterances = []
+                full_contexts = []
+                speaker_ids = []
+                emotion_idxs = []
+            pre_dial_id = dialogue_id
+            speaker_id = speaker_vocab.word2index(speaker)
+            emotion_idx = emotion_vocab.word2index(emotion)
+            token_ids = tokenizer(utterance, add_special_tokens=False)[
+                            'input_ids'] + [CONFIG['SEP']]
+            full_context = []
+            if len(utterances) > 0:
+                context = utterances[-3:]
+                for pre_uttr in context:
+                    full_context += pre_uttr
+            full_context += token_ids
+            # query
+            query = 'Now ' + speaker + ' feels <mask>'
+            query_ids = tokenizer(query, add_special_tokens=False)['input_ids'] + [CONFIG['SEP']]
+            full_context += query_ids
 
-            speakerNameIdx = speakerNames.word2index(speakerName)
-            emotionIdx = emotionVocab.word2index(emotion)
-            tokenIds = self.tokenizer(utterance, add_special_tokens=False)['input_ids'] + [self.SEP]
+            full_context = pad_to_len(
+                full_context, CONFIG['max_len'], CONFIG['pad_value'])
+            # + CONFIG['shift']
+            utterances.append(token_ids)
+            full_contexts.append(full_context)
+            speaker_ids.append(speaker_id)
+            emotion_idxs.append(emotion_idx)
 
-            fullContent = []
-            if len(utterances):
-                # TODO check preUttr
-                fullContent += utterances[-3:]
-                for preUttr in utterances[-3:]:
-                    fullContent += preUttr
-            fullContent.extend(tokenIds)
-
-            # TODO change to question
-            query = 'Now ' + speakerName + ' feels <mask>'
-            queryIds = self.tokenizer(query, add_special_tokens=False)['input_ids']
-            queryIds.extend([self.SEP])
-            fullContent.extend(queryIds)
-
-            # TODO pad to len
-            fullContent = self.padByLength(fullContent, Constants.MAX_LEN)
-            fullContents.append(fullContent)
-            utterances.append(tokenIds)
-            speakerIds.append(speakerNameIdx)
-            emtionIdxes.append(emotionIdx)
-
-            prevDialogueId = dialogueId
-
-        # TODO add pad to len
-        padUtterance = [self.SEP] + self.tokenizer("1", add_special_tokens=False)['input_ids'] + [self.SEP]
-        padUtterance = self.padByLength(padUtterance, Constants.MAX_LEN)
-
-        dialogueId = 0
-        while dialogueId < len(allUtterances):
-            utterances = allUtterances[dialogueId]
-            mask = [1 for _ in range(len(utterances))]
-
-            # padding
-            length = len(utterances)
-            while length < maxLen:
-                utterances.append(padUtterance)
-                length += 1
+        pad_utterance = [CONFIG['SEP']] + tokenizer(
+            "1",
+            add_special_tokens=False
+        )['input_ids'] + [CONFIG['SEP']]
+        pad_utterance = pad_to_len(
+            pad_utterance, CONFIG['max_len'], CONFIG['pad_value'])
+        # for CRF
+        ret_mask = []
+        ret_last_turns = []
+        for dial_id, utterances in tqdm(enumerate(ret_utterances), desc='build dataset'):
+            mask = [1] * len(utterances)
+            while len(utterances) < max_turns:
+                utterances.append(pad_utterance)
+                ret_emotion_idxs[dial_id].append(-1)
+                ret_speaker_ids[dial_id].append(0)
                 mask.append(0)
-                allEmotionIdxes[dialogueId].append(-1)
-                allSpeakerIds[dialogueId].append(0)
-            allUtterances[dialogueId] = utterances
-            allMask.append(mask)
+            ret_mask.append(mask)
+            ret_utterances[dial_id] = utterances
 
-            lastTurns = [-1 for _ in range(maxLen)]
-            for turnId in range(0, maxLen):
-                curSpeaker = allSpeakerIds[dialogueId][turnId]
-                if curSpeaker == 0:
+            last_turns = [-1] * max_turns
+            for turn_id in range(max_turns):
+                curr_spk = ret_speaker_ids[dial_id][turn_id]
+                if curr_spk == 0:
                     break
-                for idx in range(0, turnId):
-                    if curSpeaker == allSpeakerIds[dialogueId][idx]:
-                        lastTurns[turnId] = idx
-            allLastTurns.append(lastTurns)
-            dialogueId += 1
-
-        return TensorDataset(
-            torch.LongTensor(allUtterances),
-            torch.LongTensor(allSpeakerIds),
-            torch.LongTensor(allEmotionIdxes),
-            torch.ByteTensor(allMask),
-            torch.LongTensor(allLastTurns)
+                for idx in range(0, turn_id):
+                    if curr_spk == ret_speaker_ids[dial_id][idx]:
+                        last_turns[turn_id] = idx
+            ret_last_turns.append(last_turns)
+        dataset = TensorDataset(
+            torch.LongTensor(ret_utterances),
+            torch.LongTensor(ret_speaker_ids),
+            torch.LongTensor(ret_emotion_idxs),
+            torch.ByteTensor(ret_mask),
+            torch.LongTensor(ret_last_turns)
         )
+        return dataset
