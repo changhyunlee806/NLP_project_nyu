@@ -288,7 +288,7 @@ def get_paramsgroup(model, warmup=False):
     if warmup:
         return warmup_params
     params = sorted(params, key=lambda x: x['lr'], reverse=True)
-    print('params: #################', params)
+    #print('params: #################', params)
     return params
 
 
@@ -425,8 +425,8 @@ def test(model, data):
                 continue
         out = model(sentences, mask, speaker_ids, last_turns, None)
 
-        maskBatch = torch.arange(0, mask.shape[0])
-        maskSequence = torch.arange(0, mask.shape[1])
+        maskBatch = torch.arange(0, mask.shape[0]).detach().cpu().numpy()
+        maskSequence = torch.arange(0, mask.shape[1]).detach().cpu().numpy()
         
         for batch1, sequence1 in torch.cartesian_prod(maskBatch, maskSequence):
             # Only if not padded (aka. there is information) -> mask==1 (True), APPEND
