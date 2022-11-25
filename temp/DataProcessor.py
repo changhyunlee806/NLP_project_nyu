@@ -81,10 +81,8 @@ class DataProcessor:
 
         meldData = pd.read_csv(file_path)
 
-        utterances = []
-        full_contexts = []
-        speaker_ids = []
-        emotion_idxs = []
+        utterances, fullContents = [], []
+        speakerIds, emotionIdxes = [], []
         pre_dial_id = -1
         max_turns = 0
         for row in tqdm(meldData.iterrows()):
@@ -98,17 +96,17 @@ class DataProcessor:
             if pre_dial_id == -1:
                 pre_dial_id = dialogueId
             if dialogueId != pre_dial_id:
-                allUtterances.append(full_contexts)
-                allSpeakerIds.append(speaker_ids)
-                allEmotionIdxes.append(emotion_idxs)
+                allUtterances.append(fullContents)
+                fullContents = []
+                allSpeakerIds.append(speakerIds)
+                speakerIds = []
+                allEmotionIdxes.append(emotionIdxes)
+                emotionIdxes = []
                 max_turns = max(max_turns, len(utterances))
                 utterances = []
-                full_contexts = []
-                speaker_ids = []
-                emotion_idxs = []
             pre_dial_id = dialogueId
-            speaker_id = speakerNames.word2index(speaker)
-            emotion_idx = emotionVocab.word2index(emotion)
+            speakerId = speakerNames.word2index(speaker)
+            emotionIdx = emotionVocab.word2index(emotion)
             token_ids = self.tokenizer(utterance, add_special_tokens=False)['input_ids'] + [self.SEP]
             full_context = []
             if len(utterances) > 0:
@@ -124,9 +122,9 @@ class DataProcessor:
             full_context = self.padByLength(full_context, Constants.MAX_LEN)
             # + CONFIG['shift']
             utterances.append(token_ids)
-            full_contexts.append(full_context)
-            speaker_ids.append(speaker_id)
-            emotion_idxs.append(emotion_idx)
+            fullContents.append(full_context)
+            speakerIds.append(speakerId)
+            emotionIdxes.append(emotionIdx)
 
         pad_utterance = [self.SEP] + self.tokenizer("1", add_special_tokens=False)['input_ids'] + [self.SEP]
         pad_utterance = self.padByLength(pad_utterance, Constants.MAX_LEN)
