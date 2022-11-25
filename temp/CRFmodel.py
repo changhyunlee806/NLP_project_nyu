@@ -7,7 +7,7 @@ class CRFModel(nn.Module):
         super().__init__()
         self.numClasses = numClasses
         self.dropout = dropout
-        self.padValue = 1 # pad value
+        self.padValue = 1  # pad value
         # CLS
         tokenizer = AutoTokenizer.from_pretrained(bert_path)
         self.CLS = tokenizer('')['input_ids'][0]
@@ -17,11 +17,17 @@ class CRFModel(nn.Module):
         self.CRFlayer = CRF(self.numClasses)
         self.emission = nn.Linear(self.dimension, self.numClasses)
         self.lossFunc = torch.nn.CrossEntropyLoss(ignore_index=-1)
+
     def device(self):
         return self.encoder.device
 
     def forward(self, sentences, sentencesMask, speakerIds, lastTurns, emotionIdxes=None):
-    #def forward(self, sentences, sentencesMask, speakerIds, emotionIdxes):
+        # def forward(self, sentences, sentencesMask, speakerIds, emotionIdxes):
+        # batchSize, maxTurns = sentences.shape[0], sentences.shape[1]
+
+        # speakerIdsReshaped = speakerIds.reshape(batchSize * maxTurns, -1)
+        # sentencesReshaped = sentences.reshape(batchSize * maxTurns, -1)
+
         # works
         sentBatchSize, sentMaxTurns, sentMaxLen = sentences.shape[0], sentences.shape[1], sentences.shape[2]
         speakerBatchSize, speakerMaxTurns = speakerIds.shape[0], speakerIds.shape[1]
@@ -56,7 +62,7 @@ class CRFModel(nn.Module):
         # change below
         features = utteranceEncoded[torch.arange(maskPos.shape[0]), maskPos, :]
         emissions = self.emission(features)
-        crfEmissions = emissions.reshape(sentBatchSize, sentMaxTurns, -1).transpose(0, 1)
+        crfEmissions = torch.transpose(emissions.reshape(sentBatchSize, sentMaxTurns, -1), dim0=0, dim1=1)
 
         sentencesMask = torch.transpose(sentencesMask, dim0=0, dim1=1)
         # check if it runs, if not it may mean speaker and sentence batch size are different
@@ -66,7 +72,7 @@ class CRFModel(nn.Module):
 
         # train
         if emotionIdxes is not None:
-            emotionIdxes = emotionIdxes.transpose(0, 1)
+            emotionIdxes = torch.transpose(emotionIdxes, dim0=0, dim1=1)
             return -self.CRFlayer(crfEmissions, emotionIdxes, mask=sentencesMask) + self.lossFunc(
                 emissions.view(-1, self.numClasses), emotionIdxes.view(-1))
         else:

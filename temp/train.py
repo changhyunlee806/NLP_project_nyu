@@ -1,5 +1,5 @@
 from config import *
-from CRFmodel3 import CRFModel
+from CRFmodel import CRFModel
 import itertools
 from DataProcessor import DataProcessor
 import Constants
