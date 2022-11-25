@@ -84,7 +84,7 @@ class DataProcessor:
         utterances, fullContents = [], []
         speakerIds, emotionIdxes = [], []
         prevDialogueId = meldData.iloc[0]['Dialogue_ID']
-        max_turns = 0
+        maxTurns = 0
         for row in tqdm(meldData.iterrows()):
             meta = row[1]
             utterance = meta['Utterance'].replace('’', '\'').replace("\"", '')
@@ -102,7 +102,7 @@ class DataProcessor:
                 speakerIds = []
                 allEmotionIdxes.append(emotionIdxes)
                 emotionIdxes = []
-                max_turns = max(max_turns, len(utterances))
+                maxTurns = max(maxTurns, len(utterances))
                 utterances = []
             prevDialogueId = dialogueId
 
@@ -130,23 +130,30 @@ class DataProcessor:
         pad_utterance = [self.SEP] + self.tokenizer("1", add_special_tokens=False)['input_ids'] + [self.SEP]
         pad_utterance = self.padByLength(pad_utterance, Constants.MAX_LEN)
 
-        for dial_id, utterances in tqdm(enumerate(allUtterances), desc='build dataset'):
-            mask = [1] * len(utterances)
-            while len(utterances) < max_turns:
-                utterances.append(pad_utterance)
-                allEmotionIdxes[dial_id].append(-1)
-                allSpeakerIds[dial_id].append(0)
-                mask.append(0)
-            allMasks.append(mask)
-            allUtterances[dial_id] = utterances
+        for dialId in range(0, len(allUtterances)):
+            utterances = allUtterances[dialId]
+            mask = [1 for _ in range(len(utterances))]
+        #for dialId, utterances in tqdm(enumerate(allUtterances), desc='build dataset'):
+        #    mask = [1] * len(utterances)
 
-            last_turns = [-1] * max_turns
-            for turn_id in range(max_turns):
-                curr_spk = allSpeakerIds[dial_id][turn_id]
+            length = len(utterances)
+            while length < maxTurns:
+                utterances.append(pad_utterance)
+                length += 1
+                mask.append(0)
+                allEmotionIdxes[dialId].append(-1)
+                allSpeakerIds[dialId].append(0)
+
+            allMasks.append(mask)
+            allUtterances[dialId] = utterances
+
+            last_turns = [-1] * maxTurns
+            for turn_id in range(maxTurns):
+                curr_spk = allSpeakerIds[dialId][turn_id]
                 if curr_spk == 0:
                     break
                 for idx in range(0, turn_id):
-                    if curr_spk == allSpeakerIds[dial_id][idx]:
+                    if curr_spk == allSpeakerIds[dialId][idx]:
                         last_turns[turn_id] = idx
             allLastTurns.append(last_turns)
 
