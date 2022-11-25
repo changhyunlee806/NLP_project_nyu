@@ -496,6 +496,51 @@ def train(model, train_data_path, dev_data_path, test_data_path):
     f1 = test(model, testset)
     print('best f1 on test is {:.4f}'.format(f1), flush=True)
 
+# # 창현 버전
+# def train(model, train_data_path, dev_data_path, test_data_path, warmUp, numEpochs):
+#     devset = load_meld_and_builddataset(dev_data_path)
+#     testset = load_meld_and_builddataset(test_data_path)
+#     trainset = load_meld_and_builddataset(train_data_path)
+
+#     # train
+#     optimizer = torch.optim.AdamW(get_paramsgroup(model))
+#     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.9)
+#     best_score = -9999
+#     # tq_epoch = tqdm(total=CONFIG['epochs'], position=0)
+#     for numEpoch in tqdm(range(numEpochs)):
+#         # tq_epoch.set_description('training on epoch {}'.format(numEpoch))
+#         # tq_epoch.update()
+
+#         ############# dev set training
+#         train_epoch(model, optimizer, trainset, epoch_num=numEpoch)
+#         torch.cuda.empty_cache()
+#         # calculate f1 score
+#         score = test(model, devset)
+#         torch.cuda.empty_cache()
+#         print(f'f1 score on devset - epoch #{numEpoch} -> {round(score,4)}', flush=True)
+#         # save the model with best score
+#         if score > best_score:
+#             best_score = score
+#             torch.save(model, 'models/f1_{:.4f}_@epoch{}.pkl'.format(best_f1, numEpoch))
+#         if lr_scheduler.get_last_lr()[0] > 0.00005:
+#             lr_scheduler.step()
+        
+#         ############ test set training
+#         score = test(model, testset)
+#         print(f'f1 score on testset - epoch #{numEpoch} -> {round(score,4)}', flush=True)
+
+#     #tq_epoch.close()
+#     # finding and loading the best model
+#     # change later
+#     lst = os.listdir('./models')
+#     lst = list(filter(lambda item: item.endswith('.pkl'), lst))
+#     lst.sort(key=lambda x: os.path.getmtime(os.path.join('models', x)))
+#     model = torch.load(os.path.join('models', lst[-1]))
+    
+#     # score on best model
+#     score = test(model, testset)
+#     #print('best f1 on test is {:.4f}'.format(score), flush=True)
+#     print(f'best f1 score on testset -> {round(score,4)}', flush=True)
 
 if __name__ == '__main__':
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -567,9 +612,12 @@ if __name__ == '__main__':
     model = CRFModel(numClasses=7, dropout=0.3, bert_path='roberta-base')
     device = CONFIG['device']
     model.to(device)
+    
     print('---config---')
     for k, v in CONFIG.items():
         print(k, '\t\t\t', v, flush=True)
+    
+    
     if args.finetune:
         lst = os.listdir('./models')
         lst = list(filter(lambda item: item.endswith('.pkl'), lst))
