@@ -112,6 +112,7 @@ def load_emorynlp_and_builddataset(file_path, train=False):
 
 
 def load_meld_and_builddataset(file_path, train=False):
+
     speaker_vocab = vocab.UnkVocab.from_dict(torch.load(
         Constants.DataPaths['speaker_vocab_path']
     ))
@@ -328,11 +329,11 @@ def test(model, data):
     return F1
 
 
-def train(model, train_data_path, dev_data_path, test_data_path):
+def train(model, train_data_path, dev_data_path, test_data_path, dataProcessor):
     # if CONFIG['task_name'] == 'meld':
-    devset = DataProcessor.getMELDdata(dev_data_path)
-    testset = DataProcessor.getMELDdata(test_data_path)
-    trainset = DataProcessor.getMELDdata(train_data_path)
+    devset = dataProcessor.getMELDdata(dev_data_path)
+    testset = dataProcessor.getMELDdata(test_data_path)
+    trainset = dataProcessor.getMELDdata(train_data_path)
         # devset = load_meld_and_builddataset(dev_data_path)
         # testset = load_meld_and_builddataset(test_data_path)
         # trainset = load_meld_and_builddataset(train_data_path)
@@ -452,7 +453,8 @@ if __name__ == '__main__':
     # torch.autograd.set_detect_anomaly(True)
     print(train_data_path)
     print(Constants.DataPaths['additional_vocab'])
-    DataProcessor.getVocabs(train=train_data_path, val=dev_data_path, test=test_data_path, additional=Constants.DataPaths['additional_vocab'])
+    dataProcessor = DataProcessor('roberta-base')
+    dataProcessor.getVocabs(train=train_data_path, val=dev_data_path, test=test_data_path, additional=Constants.DataPaths['additional_vocab'])
     # get_vocabs([train_data_path, dev_data_path, test_data_path],
     #            'friends_transcript.json')
     # model = PortraitModel(CONFIG)
@@ -470,7 +472,7 @@ if __name__ == '__main__':
         print('checkpoint {} is loaded'.format(
             os.path.join('models', lst[-1])), flush=True)
     if args.train:
-        train(model, train_data_path, dev_data_path, test_data_path)
+        train(model, train_data_path, dev_data_path, test_data_path, dataProcessor)
     if args.test:
         # testset = load_meld_and_builddataset(dev_data_path)
         if args.task_name =='emorynlp':
