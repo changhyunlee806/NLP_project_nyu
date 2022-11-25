@@ -113,7 +113,7 @@ class DataProcessor:
                 # TODO check preUttr
                 fullContent += utterances[-3:]
                 for preUttr in utterances[-3:]:
-                    fullContent.extend(preUttr)
+                    fullContent += preUttr
             fullContent.extend(tokenIds)
 
             # TODO change to question
@@ -156,10 +156,9 @@ class DataProcessor:
                 curSpeaker = allSpeakerIds[dialogueId][turnId]
                 if curSpeaker == 0:
                     break
-                for idx in range(turnId-1, -1, -1):
+                for idx in range(0, turnId):
                     if curSpeaker == allSpeakerIds[dialogueId][idx]:
                         lastTurns[turnId] = idx
-                        break
             allLastTurns.append(lastTurns)
             dialogueId += 1
 
