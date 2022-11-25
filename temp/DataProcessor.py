@@ -114,7 +114,7 @@ class DataProcessor:
             speaker_id = speaker_vocab.word2index(speaker)
             emotion_idx = emotion_vocab.word2index(emotion)
             token_ids = self.tokenizer(utterance, add_special_tokens=False)[
-                            'input_ids'] + [CONFIG['SEP']]
+                            'input_ids'] + [self.SEP]
             full_context = []
             if len(utterances) > 0:
                 context = utterances[-3:]
@@ -123,23 +123,23 @@ class DataProcessor:
             full_context += token_ids
             # query
             query = 'Now ' + speaker + ' feels <mask>'
-            query_ids = self.tokenizer(query, add_special_tokens=False)['input_ids'] + [CONFIG['SEP']]
+            query_ids = self.tokenizer(query, add_special_tokens=False)['input_ids'] + [self.SEP]
             full_context += query_ids
 
             full_context = pad_to_len(
-                full_context, CONFIG['max_len'], CONFIG['pad_value'])
+                full_context, Constants.MAX_LEN, Constants.PAD)
             # + CONFIG['shift']
             utterances.append(token_ids)
             full_contexts.append(full_context)
             speaker_ids.append(speaker_id)
             emotion_idxs.append(emotion_idx)
 
-        pad_utterance = [CONFIG['SEP']] + self.tokenizer(
+        pad_utterance = [self.SEP] + self.tokenizer(
             "1",
             add_special_tokens=False
-        )['input_ids'] + [CONFIG['SEP']]
+        )['input_ids'] + [self.SEP]
         pad_utterance = pad_to_len(
-            pad_utterance, CONFIG['max_len'], CONFIG['pad_value'])
+            pad_utterance, Constants.MAX_LEN, Constants.PAD)
         # for CRF
         ret_mask = []
         ret_last_turns = []
