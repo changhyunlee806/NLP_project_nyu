@@ -112,9 +112,9 @@ class DataProcessor:
             fullContent = []
             if len(utterances) > 0:
                 context = utterances[-3:]
-                fullContent.extend(context)
-                # for pre_uttr in context:
-                #     fullContent += pre_uttr
+                #fullContent.extend(context)
+                for pre_uttr in context:
+                    fullContent += pre_uttr
             fullContent += tokenIds
             # query
             query = 'Now ' + speaker + ' feels <mask>'
