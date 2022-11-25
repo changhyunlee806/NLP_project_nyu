@@ -113,7 +113,7 @@ class DataProcessor:
             pre_dial_id = dialogue_id
             speaker_id = speaker_vocab.word2index(speaker)
             emotion_idx = emotion_vocab.word2index(emotion)
-            token_ids = tokenizer(utterance, add_special_tokens=False)[
+            token_ids = self.tokenizer(utterance, add_special_tokens=False)[
                             'input_ids'] + [CONFIG['SEP']]
             full_context = []
             if len(utterances) > 0:
@@ -123,7 +123,7 @@ class DataProcessor:
             full_context += token_ids
             # query
             query = 'Now ' + speaker + ' feels <mask>'
-            query_ids = tokenizer(query, add_special_tokens=False)['input_ids'] + [CONFIG['SEP']]
+            query_ids = self.tokenizer(query, add_special_tokens=False)['input_ids'] + [CONFIG['SEP']]
             full_context += query_ids
 
             full_context = pad_to_len(
@@ -134,7 +134,7 @@ class DataProcessor:
             speaker_ids.append(speaker_id)
             emotion_idxs.append(emotion_idx)
 
-        pad_utterance = [CONFIG['SEP']] + tokenizer(
+        pad_utterance = [CONFIG['SEP']] + self.tokenizer(
             "1",
             add_special_tokens=False
         )['input_ids'] + [CONFIG['SEP']]
