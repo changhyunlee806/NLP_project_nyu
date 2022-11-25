@@ -20,6 +20,13 @@ class DataProcessor:
         self.CLS = specialTokenIds[0]
         self.SEP = specialTokenIds[1]
 
+    def pad_to_len(self, list_data, max_len, pad_value):
+        list_data = list_data[-max_len:]
+        len_to_pad = max_len - len(list_data)
+        pads = [pad_value] * len_to_pad
+        list_data.extend(pads)
+        return list_data
+
 
     def padByLength(self, sentence, maxLen):
         sentence = sentence[-maxLen:]
@@ -126,7 +133,7 @@ class DataProcessor:
             query_ids = self.tokenizer(query, add_special_tokens=False)['input_ids'] + [self.SEP]
             full_context += query_ids
 
-            full_context = pad_to_len(
+            full_context = self.pad_to_len(
                 full_context, Constants.MAX_LEN, Constants.PAD)
             # + CONFIG['shift']
             utterances.append(token_ids)
@@ -138,7 +145,7 @@ class DataProcessor:
             "1",
             add_special_tokens=False
         )['input_ids'] + [self.SEP]
-        pad_utterance = pad_to_len(
+        pad_utterance = self.pad_to_len(
             pad_utterance, Constants.MAX_LEN, Constants.PAD)
         # for CRF
         ret_mask = []
