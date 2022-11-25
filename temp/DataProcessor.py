@@ -134,8 +134,7 @@ class DataProcessor:
             query_ids = self.tokenizer(query, add_special_tokens=False)['input_ids'] + [self.SEP]
             full_context += query_ids
 
-            full_context = self.padByLength(
-                full_context, Constants.MAX_LEN, Constants.PAD)
+            full_context = self.padByLength(full_context, Constants.MAX_LEN)
             # + CONFIG['shift']
             utterances.append(token_ids)
             full_contexts.append(full_context)
@@ -146,8 +145,7 @@ class DataProcessor:
             "1",
             add_special_tokens=False
         )['input_ids'] + [self.SEP]
-        pad_utterance = self.padByLength(
-            pad_utterance, Constants.MAX_LEN, Constants.PAD)
+        pad_utterance = self.padByLength(pad_utterance, Constants.MAX_LEN)
         # for CRF
         #ret_mask = []
         #ret_last_turns = []
