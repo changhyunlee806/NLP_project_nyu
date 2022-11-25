@@ -83,7 +83,7 @@ class DataProcessor:
 
         utterances, fullContents = [], []
         speakerIds, emotionIdxes = [], []
-        pre_dial_id = -1
+        prevDialogueId = meldData.iloc[0]['Dialogue_ID']
         max_turns = 0
         for row in tqdm(meldData.iterrows()):
             meta = row[1]
@@ -93,9 +93,9 @@ class DataProcessor:
             emotion = meta['Emotion'].lower()
             dialogueId, utteranceId = meta['Dialogue_ID'], meta['Utterance_ID']
 
-            if pre_dial_id == -1:
-                pre_dial_id = dialogueId
-            if dialogueId != pre_dial_id:
+            # if prevDialogueId == -1:
+            #     prevDialogueId = dialogueId
+            if dialogueId != prevDialogueId:
                 allUtterances.append(fullContents)
                 fullContents = []
                 allSpeakerIds.append(speakerIds)
@@ -104,7 +104,8 @@ class DataProcessor:
                 emotionIdxes = []
                 max_turns = max(max_turns, len(utterances))
                 utterances = []
-            pre_dial_id = dialogueId
+            prevDialogueId = dialogueId
+
             speakerId = speakerNames.word2index(speaker)
             emotionIdx = emotionVocab.word2index(emotion)
             token_ids = self.tokenizer(utterance, add_special_tokens=False)['input_ids'] + [self.SEP]
