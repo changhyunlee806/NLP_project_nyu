@@ -442,106 +442,110 @@ def test(model, data):
     return score
 
 
-def train(model, train_data_path, dev_data_path, test_data_path):
-    if CONFIG['task_name'] == 'meld':
-        devset = load_meld_and_builddataset(dev_data_path)
-        testset = load_meld_and_builddataset(test_data_path)
-        trainset = load_meld_and_builddataset(train_data_path)
-    else:
-        devset = load_emorynlp_and_builddataset(dev_data_path)
-        testset = load_emorynlp_and_builddataset(test_data_path)
-        trainset = load_emorynlp_and_builddataset(train_data_path)
+# def train(model, train_data_path, dev_data_path, test_data_path):
+#     if CONFIG['task_name'] == 'meld':
+#         devset = load_meld_and_builddataset(dev_data_path)
+#         testset = load_meld_and_builddataset(test_data_path)
+#         trainset = load_meld_and_builddataset(train_data_path)
+#     else:
+#         devset = load_emorynlp_and_builddataset(dev_data_path)
+#         testset = load_emorynlp_and_builddataset(test_data_path)
+#         trainset = load_emorynlp_and_builddataset(train_data_path)
 
 
-    # warmup
-    optimizer = torch.optim.AdamW(get_paramsgroup(model, warmup=True))
-    for epoch in range(CONFIG['wp']):
-        train_epoch(model, optimizer, trainset, epoch_num=epoch)
-        torch.cuda.empty_cache()
-        f1 = test(model, devset)
-        torch.cuda.empty_cache()
-        print('f1 on dev @ warmup epoch {} is {:.4f}'.format(
-            epoch, f1), flush=True)
-    # train
-    optimizer = torch.optim.AdamW(get_paramsgroup(model))
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(
-        optimizer, step_size=1, gamma=0.9)
-    best_f1 = -1
-    tq_epoch = tqdm(total=CONFIG['epochs'], position=0)
-    for epoch in range(CONFIG['epochs']):
-        tq_epoch.set_description('training on epoch {}'.format(epoch))
-        tq_epoch.update()
-        train_epoch(model, optimizer, trainset, epoch_num=epoch)
-        torch.cuda.empty_cache()
-        f1 = test(model, devset)
-        torch.cuda.empty_cache()
-        print('f1 on dev @ epoch {} is {:.4f}'.format(epoch, f1), flush=True)
-        # '''
-        if f1 > best_f1:
-            best_f1 = f1
-            torch.save(model,
-                       'models/f1_{:.4f}_@epoch{}.pkl'
-                       .format(best_f1, epoch))
-        if lr_scheduler.get_last_lr()[0] > 1e-5:
-            lr_scheduler.step()
-        f1 = test(model, testset)
-        print('f1 on test @ epoch {} is {:.4f}'.format(epoch, f1), flush=True)
-        # f1 = test(model, test_on_trainset)
-        # print('f1 on train @ epoch {} is {:.4f}'.format(epoch, f1), flush=True)
-        # '''
-    tq_epoch.close()
-    lst = os.listdir('./models')
-    lst = list(filter(lambda item: item.endswith('.pkl'), lst))
-    lst.sort(key=lambda x: os.path.getmtime(os.path.join('models', x)))
-    model = torch.load(os.path.join('models', lst[-1]))
-    f1 = test(model, testset)
-    print('best f1 on test is {:.4f}'.format(f1), flush=True)
-
-# # 창현 버전
-# def train(model, train_data_path, dev_data_path, test_data_path, warmUp, numEpochs):
-#     devset = load_meld_and_builddataset(dev_data_path)
-#     testset = load_meld_and_builddataset(test_data_path)
-#     trainset = load_meld_and_builddataset(train_data_path)
-
+#     # warmup
+#     optimizer = torch.optim.AdamW(get_paramsgroup(model, warmup=True))
+#     for epoch in range(CONFIG['wp']):
+#         train_epoch(model, optimizer, trainset, epoch_num=epoch)
+#         torch.cuda.empty_cache()
+#         f1 = test(model, devset)
+#         torch.cuda.empty_cache()
+#         print('f1 on dev @ warmup epoch {} is {:.4f}'.format(
+#             epoch, f1), flush=True)
 #     # train
 #     optimizer = torch.optim.AdamW(get_paramsgroup(model))
-#     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.9)
-#     best_score = -9999
-#     # tq_epoch = tqdm(total=CONFIG['epochs'], position=0)
-#     for numEpoch in tqdm(range(numEpochs)):
-#         # tq_epoch.set_description('training on epoch {}'.format(numEpoch))
-#         # tq_epoch.update()
-
-#         ############# dev set training
-#         train_epoch(model, optimizer, trainset, epoch_num=numEpoch)
+#     lr_scheduler = torch.optim.lr_scheduler.StepLR(
+#         optimizer, step_size=1, gamma=0.9)
+#     best_f1 = -1
+#     tq_epoch = tqdm(total=CONFIG['epochs'], position=0)
+#     for epoch in range(CONFIG['epochs']):
+#         tq_epoch.set_description('training on epoch {}'.format(epoch))
+#         tq_epoch.update()
+#         train_epoch(model, optimizer, trainset, epoch_num=epoch)
 #         torch.cuda.empty_cache()
-#         # calculate f1 score
-#         score = test(model, devset)
+#         f1 = test(model, devset)
 #         torch.cuda.empty_cache()
-#         print(f'f1 score on devset - epoch #{numEpoch} -> {round(score,4)}', flush=True)
-#         # save the model with best score
-#         if score > best_score:
-#             best_score = score
-#             torch.save(model, 'models/f1_{:.4f}_@epoch{}.pkl'.format(best_f1, numEpoch))
-#         if lr_scheduler.get_last_lr()[0] > 0.00005:
+#         print('f1 on dev @ epoch {} is {:.4f}'.format(epoch, f1), flush=True)
+#         # '''
+#         if f1 > best_f1:
+#             best_f1 = f1
+#             torch.save(model,
+#                        'models/f1_{:.4f}_@epoch{}.pkl'
+#                        .format(best_f1, epoch))
+#         if lr_scheduler.get_last_lr()[0] > 1e-5:
 #             lr_scheduler.step()
-        
-#         ############ test set training
-#         score = test(model, testset)
-#         print(f'f1 score on testset - epoch #{numEpoch} -> {round(score,4)}', flush=True)
-
-#     #tq_epoch.close()
-#     # finding and loading the best model
-#     # change later
+#         f1 = test(model, testset)
+#         print('f1 on test @ epoch {} is {:.4f}'.format(epoch, f1), flush=True)
+#         # f1 = test(model, test_on_trainset)
+#         # print('f1 on train @ epoch {} is {:.4f}'.format(epoch, f1), flush=True)
+#         # '''
+#     tq_epoch.close()
 #     lst = os.listdir('./models')
 #     lst = list(filter(lambda item: item.endswith('.pkl'), lst))
 #     lst.sort(key=lambda x: os.path.getmtime(os.path.join('models', x)))
 #     model = torch.load(os.path.join('models', lst[-1]))
+#     f1 = test(model, testset)
+#     print('best f1 on test is {:.4f}'.format(f1), flush=True)
+
+# 창현 버전
+def train(model, train_data_path, dev_data_path, test_data_path, warmUp, numEpochs):
+    devset = load_meld_and_builddataset(dev_data_path)
+    testset = load_meld_and_builddataset(test_data_path)
+    trainset = load_meld_and_builddataset(train_data_path)
+
+    # train
+    optimizer = torch.optim.AdamW(get_paramsgroup(model))
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.9)
+    best_score = -9999
+    # tq_epoch = tqdm(total=CONFIG['epochs'], position=0)
+    for numEpoch in tqdm(range(numEpochs)):
+        # tq_epoch.set_description('training on epoch {}'.format(numEpoch))
+        # tq_epoch.update()
+
+        ############# dev set training
+        #train_epoch(model, optimizer, trainset, epoch_num=numEpoch)
+        torch.cuda.empty_cache()
+        # calculate f1 score
+        score = test(model, devset)
+        torch.cuda.empty_cache()
+        print(f'f1 score on devset - epoch #{numEpoch} -> {round(score,4)}', flush=True)
+        # save the model with best score
+        if score > best_score:
+            best_score = score
+            torch.save(model, 'models/f1_{:.4f}_@epoch{}.pkl'.format(best_f1, numEpoch))
+        if lr_scheduler.get_last_lr()[0] > 0.00005:
+            lr_scheduler.step()
+        
+        ############ test set training
+        score = test(model, testset)
+        print(f'f1 score on testset - epoch #{numEpoch} -> {round(score,4)}', flush=True)
+
+    #tq_epoch.close()
+    # finding and loading the best model
+    # change later
+    lst = os.listdir('./models')
+    lst = list(filter(lambda item: item.endswith('.pkl'), lst))
+    lst.sort(key=lambda x: os.path.getmtime(os.path.join('models', x)))
+    print('dirlist', lst)
+    model = torch.load(os.path.join('models', lst[-1]))
+
+    #directoryList = os.listdir('./models')
+
     
-#     # score on best model
-#     score = test(model, testset)
-#     #print('best f1 on test is {:.4f}'.format(score), flush=True)
-#     print(f'best f1 score on testset -> {round(score,4)}', flush=True)
+    # score on best model
+    score = test(model, testset)
+    #print('best f1 on test is {:.4f}'.format(score), flush=True)
+    print(f'best f1 score on testset -> {round(score,4)}', flush=True)
 
 if __name__ == '__main__':
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
