@@ -425,8 +425,8 @@ def test(model, data):
                 continue
         out = model(sentences, mask, speaker_ids, last_turns, None)
 
-        maskBatch = torch.arange(0, mask.shape[0]).to(device) #.detach().cpu().numpy()
-        maskSequence = torch.arange(0, mask.shape[1]).to(device) #.detach().cpu().numpy()
+        maskBatch = torch.arange(0, mask.shape[0])
+        maskSequence = torch.arange(0, mask.shape[1])
         
         for batch1, sequence1 in torch.cartesian_prod(maskBatch, maskSequence):
             # Only if not padded (aka. there is information) -> mask==1 (True), APPEND
@@ -436,6 +436,8 @@ def test(model, data):
                 yPred.append(out[batch1][sequence1])
                 yTrue.append(emotion_idxs[batch1][sequence1])
 
+    yPred = yPred.cpu().detach().numpy()
+    yTrue = yTrue.cpu().detach().numpy()
     score = f1_score(y_pred=yPred, y_true=yTrue, average='weighted')
     model.train()
     return score
