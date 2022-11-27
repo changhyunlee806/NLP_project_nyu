@@ -498,7 +498,7 @@ def test(model, data):
 #     print('best f1 on test is {:.4f}'.format(f1), flush=True)
 
 # 창현 버전
-def train(model, train_data_path, dev_data_path, test_data_path, warmUp, numEpochs):
+def train(model, train_data_path, dev_data_path, test_data_path, numEpochs=5): #deleted warmup, numEpochs from CONFIG['epochs']
     devset = load_meld_and_builddataset(dev_data_path)
     testset = load_meld_and_builddataset(test_data_path)
     trainset = load_meld_and_builddataset(train_data_path)
