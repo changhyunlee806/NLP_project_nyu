@@ -433,11 +433,11 @@ def test(model, data):
             if bool(mask[batch1][sequence1]) != True: 
                 continue
             else:
-                yPred.append(out[batch1][sequence1])
-                yTrue.append(emotion_idxs[batch1][sequence1])
+                yPred.append(out[batch1][sequence1].cpu().detach().numpy())
+                yTrue.append(emotion_idxs[batch1][sequence1].cpu().detach().numpy())
 
-    yPred = yPred.cpu().detach().numpy()
-    yTrue = yTrue.cpu().detach().numpy()
+    # yPred = yPred.cpu().detach().numpy()
+    # yTrue = yTrue.cpu().detach().numpy()
     score = f1_score(y_pred=yPred, y_true=yTrue, average='weighted')
     model.train()
     return score
