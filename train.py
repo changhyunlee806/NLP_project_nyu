@@ -433,8 +433,8 @@ def test(model, data):
             if bool(mask[batch1][sequence1]) != True: 
                 continue
             else:
-                yPred.append(out[batch1][sequence1].cpu().detach().numpy())
-                yTrue.append(emotion_idxs[batch1][sequence1].cpu().detach().numpy())
+                yPred.append(out[batch1][sequence1]) #.cpu().detach().numpy())
+                yTrue.append(emotion_idxs[batch1][sequence1]) #.cpu().detach().numpy())
 
     # yPred = yPred.cpu().detach().numpy()
     # yTrue = yTrue.cpu().detach().numpy()
