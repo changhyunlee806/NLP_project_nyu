@@ -470,7 +470,7 @@ def train(model, train_data_path, dev_data_path, test_data_path):
     for epoch in range(CONFIG['epochs']):
         tq_epoch.set_description('training on epoch {}'.format(epoch))
         tq_epoch.update()
-        train_epoch(model, optimizer, trainset, epoch_num=epoch)
+        #train_epoch(model, optimizer, trainset, epoch_num=epoch)
         torch.cuda.empty_cache()
         f1 = test(model, devset)
         torch.cuda.empty_cache()
