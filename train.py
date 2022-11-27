@@ -498,7 +498,7 @@ def test(model, data):
 #     print('best f1 on test is {:.4f}'.format(f1), flush=True)
 
 # 창현 버전
-def train(model, train_data_path, dev_data_path, test_data_path, numEpochs=5): #deleted warmup, numEpochs from CONFIG['epochs']
+def train(model, train_data_path, dev_data_path, test_data_path, numEpochs=1): #deleted warmup, numEpochs from CONFIG['epochs']
     devset = load_meld_and_builddataset(dev_data_path)
     testset = load_meld_and_builddataset(test_data_path)
     trainset = load_meld_and_builddataset(train_data_path)
@@ -533,14 +533,16 @@ def train(model, train_data_path, dev_data_path, test_data_path, numEpochs=5): #
     #tq_epoch.close()
     # finding and loading the best model
     # change later
-    lst = os.listdir('./models')
-    lst = list(filter(lambda item: item.endswith('.pkl'), lst))
-    lst.sort(key=lambda x: os.path.getmtime(os.path.join('models', x)))
-    print('dirlist', lst)
-    model = torch.load(os.path.join('models', lst[-1]))
+    # lst = os.listdir('./models')
+    # lst = list(filter(lambda item: item.endswith('.pkl'), lst))
+    # lst.sort(key=lambda x: os.path.getmtime(os.path.join('models', x)))
+    # print('dirlist', lst)
+    # model = torch.load(os.path.join('models', lst[-1]))
 
-    #directoryList = os.listdir('./models')
-
+    directoryList = os.listdir('./models')
+    directoryList = sorted(directoryList,reverse=True)
+    print('myList', directoryList, f"'./models/{directoryList[0]}'")
+    model = torch.load(directoryList[0])
     
     # score on best model
     score = test(model, testset)
