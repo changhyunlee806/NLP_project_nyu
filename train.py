@@ -455,7 +455,7 @@ def train(model, train_data_path, dev_data_path, test_data_path):
     # warmup
     optimizer = torch.optim.AdamW(get_paramsgroup(model, warmup=True))
     for epoch in range(CONFIG['wp']):
-        train_epoch(model, optimizer, trainset, epoch_num=epoch)
+        #train_epoch(model, optimizer, trainset, epoch_num=epoch)
         torch.cuda.empty_cache()
         f1 = test(model, devset)
         torch.cuda.empty_cache()
