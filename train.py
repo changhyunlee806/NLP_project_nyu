@@ -434,12 +434,11 @@ def test(model, data):
                 continue
             else:
                 yPred.append(out[batch1][sequence1]) #.cpu().detach().numpy())
-                yTrue.append(emotion_idxs[batch1][sequence1]) #.cpu().detach().numpy())
-                print(type(out[batch1][sequence1]), type(emotion_idxs[batch1][sequence1]))
+                yTrue.append(emotion_idxs[batch1][sequence1].cpu()) #.cpu().detach().numpy())
+                print(type(out[batch1][sequence1]), type(emotion_idxs[batch1][sequence1].cpu()))
 
     # yPred = yPred.cpu().detach().numpy()
     # yTrue = yTrue.cpu().detach().numpy()
-    print('ypred',type(yPred))
     score = f1_score(y_pred=yPred, y_true=yTrue, average='weighted')
     model.train()
     return score
