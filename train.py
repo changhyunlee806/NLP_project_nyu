@@ -542,7 +542,7 @@ def train(model, train_data_path, dev_data_path, test_data_path, numEpochs=1): #
     directoryList = os.listdir('./models')
     directoryList = sorted(directoryList,reverse=True)
     print('myList', directoryList, f"'./models/{directoryList[0]}'")
-    model = torch.load(directoryList[0])
+    model = torch.load(f"'./models/{directoryList[0]}'")
     
     # score on best model
     score = test(model, testset)
