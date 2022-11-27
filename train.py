@@ -425,8 +425,8 @@ def test(model, data):
                 continue
         out = model(sentences, mask, speaker_ids, last_turns, None)
 
-        maskBatch = torch.arange(0, mask.shape[0]).detach().cpu().numpy()
-        maskSequence = torch.arange(0, mask.shape[1]).detach().cpu().numpy()
+        maskBatch = torch.arange(0, mask.shape[0]).to(device) #.detach().cpu().numpy()
+        maskSequence = torch.arange(0, mask.shape[1]).to(device) #.detach().cpu().numpy()
         
         for batch1, sequence1 in torch.cartesian_prod(maskBatch, maskSequence):
             # Only if not padded (aka. there is information) -> mask==1 (True), APPEND
