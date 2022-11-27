@@ -519,10 +519,10 @@ def train(model, train_data_path, dev_data_path, test_data_path, numEpochs=5): #
         score = test(model, devset)
         torch.cuda.empty_cache()
         print(f'f1 score on devset - epoch #{numEpoch} -> {round(score,4)}', flush=True)
-        # save the model with best score
+        # save the model with best f1 score
         if score > best_score:
             best_score = score
-            torch.save(model, 'models/f1_{:.4f}_@epoch{}.pkl'.format(best_f1, numEpoch))
+            torch.save(model, 'models/f1_{:.4f}_@epoch{}.pkl'.format(best_score, numEpoch))
         if lr_scheduler.get_last_lr()[0] > 0.00005:
             lr_scheduler.step()
         
