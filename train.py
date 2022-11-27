@@ -435,10 +435,8 @@ def test(model, data):
             else:
                 yPred.append(out[batch1][sequence1]) #.cpu().detach().numpy())
                 yTrue.append(emotion_idxs[batch1][sequence1].cpu()) #.cpu().detach().numpy())
-                print(type(out[batch1][sequence1]), type(emotion_idxs[batch1][sequence1].cpu()))
+                #print(type(out[batch1][sequence1]), type(emotion_idxs[batch1][sequence1].cpu()))
 
-    # yPred = yPred.cpu().detach().numpy()
-    # yTrue = yTrue.cpu().detach().numpy()
     score = f1_score(y_pred=yPred, y_true=yTrue, average='weighted')
     model.train()
     return score
@@ -458,7 +456,7 @@ def train(model, train_data_path, dev_data_path, test_data_path):
     # warmup
     optimizer = torch.optim.AdamW(get_paramsgroup(model, warmup=True))
     for epoch in range(CONFIG['wp']):
-        #train_epoch(model, optimizer, trainset, epoch_num=epoch)
+        train_epoch(model, optimizer, trainset, epoch_num=epoch)
         torch.cuda.empty_cache()
         f1 = test(model, devset)
         torch.cuda.empty_cache()
@@ -473,7 +471,7 @@ def train(model, train_data_path, dev_data_path, test_data_path):
     for epoch in range(CONFIG['epochs']):
         tq_epoch.set_description('training on epoch {}'.format(epoch))
         tq_epoch.update()
-        #train_epoch(model, optimizer, trainset, epoch_num=epoch)
+        train_epoch(model, optimizer, trainset, epoch_num=epoch)
         torch.cuda.empty_cache()
         f1 = test(model, devset)
         torch.cuda.empty_cache()
