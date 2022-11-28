@@ -53,7 +53,6 @@ def get_paramsgroup(model, warmup=False):
     if warmup:
         return warmup_params
     params = sorted(params, key=lambda x: x['lr'], reverse=True)
-    print('params: #################', params)
     return params
 
 
@@ -127,7 +126,7 @@ def test(model, data):
                 continue
             else:
                 yPred.append(out[batch1][sequence1])
-                yTrue.append(emotion_idxs[batch1][sequence1])
+                yTrue.append(emotion_idxs[batch1][sequence1].cpu())
 
     score = f1_score(y_pred=yPred, y_true=yTrue, average='weighted')
     model.train()
