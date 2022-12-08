@@ -251,7 +251,7 @@ if __name__ == '__main__':
     CONFIG['p_unk'] = args.p_unk
     CONFIG['accumulation_steps'] = args.accumulation_steps
     CONFIG['task_name'] = args.task_name
-    train_data_path = os.path.join(CONFIG['data_path'], 'train_sent_emo.csv')
+    train_data_path = os.path.join(CONFIG['ext_train_path'], '100_dialogues.csv')
     test_data_path = os.path.join(CONFIG['data_path'], 'test_sent_emo.csv')
     dev_data_path = os.path.join(CONFIG['data_path'], 'dev_sent_emo.csv')
 
