@@ -3,6 +3,8 @@ from CRFmodel import CRFModel
 import itertools
 from DataProcessor import DataProcessor
 import Constants
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 
 speaker_vocab_dict_path = 'vocabs/speaker_vocab.pkl'
 emotion_vocab_dict_path = 'vocabs/emotion_vocab.pkl'
@@ -129,9 +131,26 @@ def test(model, data):
                 yTrue.append(emotion_idxs[batch1][sequence1].cpu())
 
     score = f1_score(y_pred=yPred, y_true=yTrue, average='weighted')
+    print('confusion matrix')
+    print(confusion_matrix(yTrue, yPred))
+    print("classification_report")
+    print(classification_report(yTrue, yPred))
     model.train()
     return score
 
+'''
+# create confusion matrix on test and valid data
+from sklearn.metrics import confusion_matrix
+print(confusion_matrix(y_test_enc, y_test_pred_xgb), 'test')
+print(confusion_matrix(y_valid_enc, y_valid_pred_xgb), 'valid')
+
+# show classification report on test and valid data
+from sklearn.metrics import classification_report
+print("Test")
+print(classification_report(y_test_enc, y_test_pred_xgb))
+print("Valid")
+print(classification_report(y_valid_enc, y_valid_pred_xgb))
+'''
 
 def train(model, train_data_path, dev_data_path, test_data_path, dataProcessor):
     devset = dataProcessor.getMELDdata(dev_data_path)
