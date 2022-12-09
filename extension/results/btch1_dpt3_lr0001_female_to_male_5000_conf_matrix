@@ -1,0 +1,292 @@
+---config---
+bert_path 			 roberta-base
+epochs 			 5
+lr 			 0.0001
+ptmlr 			 1e-05
+batch_size 			 1
+max_len 			 256
+max_value_list 			 16
+bert_dim 			 1024
+pad_value 			 1
+shift 			 1024
+dropout 			 0.3
+p_unk 			 0.1
+data_splits 			 20
+num_classes 			 7
+wp 			 0
+wp_pretrain 			 5
+data_path 			 ../../MELD/data/MELD/
+ext_train_path 			 ../extension/
+accumulation_steps 			 8
+rnn_layers 			 2
+tf_rate 			 0.8
+aux_loss_weight 			 0.3
+ngpus 			 2
+device 			 cuda:0
+CLS 			 0
+SEP 			 2
+task_name 			 meld
+confusion matrix
+[[376   0   0   0  89   0   0]
+ [ 83   2   0   0  64   0   0]
+ [ 21   0   0   0  19   0   0]
+ [ 84   0   0   0  19   0   0]
+ [ 56   0   0   0 107   0   0]
+ [ 16   0   0   0   6   0   0]
+ [ 84   0   0   0  69   0   0]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.52      0.81      0.63       465
+           1       1.00      0.01      0.03       149
+           2       0.00      0.00      0.00        40
+           3       0.00      0.00      0.00       103
+           4       0.29      0.66      0.40       163
+           5       0.00      0.00      0.00        22
+           6       0.00      0.00      0.00       153
+
+    accuracy                           0.44      1095
+   macro avg       0.26      0.21      0.15      1095
+weighted avg       0.40      0.44      0.33      1095
+
+f1 on dev @ epoch 0 is 0.3325
+confusion matrix
+[[1036    0    0    0  212    0    0]
+ [ 184    1    0    0   95    0    0]
+ [  35    0    0    0   15    0    0]
+ [ 165    0    0    0   43    0    0]
+ [ 129    0    0    0  273    0    0]
+ [  50    0    0    0   18    0    0]
+ [ 176    0    0    0  159    0    3]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.58      0.83      0.69      1248
+           1       1.00      0.00      0.01       280
+           2       0.00      0.00      0.00        50
+           3       0.00      0.00      0.00       208
+           4       0.33      0.68      0.45       402
+           5       0.00      0.00      0.00        68
+           6       1.00      0.01      0.02       338
+
+    accuracy                           0.51      2594
+   macro avg       0.42      0.22      0.17      2594
+weighted avg       0.57      0.51      0.40      2594
+
+f1 on test @ epoch 0 is 0.4023
+confusion matrix
+[[433  13   0   0   7   0  12]
+ [ 51  31   0   0  27   0  40]
+ [ 14   3   0   0   7   0  16]
+ [ 79   1   0   0   4   0  19]
+ [ 81   2   0   0  67   0  13]
+ [ 13   2   0   0   0   0   7]
+ [ 76   5   0   0  26   0  46]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.58      0.93      0.71       465
+           1       0.54      0.21      0.30       149
+           2       0.00      0.00      0.00        40
+           3       0.00      0.00      0.00       103
+           4       0.49      0.41      0.45       163
+           5       0.00      0.00      0.00        22
+           6       0.30      0.30      0.30       153
+
+    accuracy                           0.53      1095
+   macro avg       0.27      0.26      0.25      1095
+weighted avg       0.43      0.53      0.45      1095
+
+f1 on dev @ epoch 1 is 0.4527
+confusion matrix
+[[1158   17    0    0   38    0   35]
+ [  92   71    0    0   41    0   76]
+ [  30    0    0    0    5    0   15]
+ [ 156    3    0    0   13    0   36]
+ [ 176    8    0    0  194    0   24]
+ [  37    3    0    0    3    0   25]
+ [ 126    4    0    0   57    0  151]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.65      0.93      0.77      1248
+           1       0.67      0.25      0.37       280
+           2       0.00      0.00      0.00        50
+           3       0.00      0.00      0.00       208
+           4       0.55      0.48      0.52       402
+           5       0.00      0.00      0.00        68
+           6       0.42      0.45      0.43       338
+
+    accuracy                           0.61      2594
+   macro avg       0.33      0.30      0.30      2594
+weighted avg       0.53      0.61      0.54      2594
+
+f1 on test @ epoch 1 is 0.5444
+confusion matrix
+[[431  17   0   0   7   0  10]
+ [ 39  93   0   0   6   0  11]
+ [ 13  16   0   0   1   0  10]
+ [ 70  15   0   2   4   0  12]
+ [ 64  22   0   0  65   0  12]
+ [ 10   6   0   2   0   0   4]
+ [ 73  18   0   1  11   0  50]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.62      0.93      0.74       465
+           1       0.50      0.62      0.55       149
+           2       0.00      0.00      0.00        40
+           3       0.40      0.02      0.04       103
+           4       0.69      0.40      0.51       163
+           5       0.00      0.00      0.00        22
+           6       0.46      0.33      0.38       153
+
+    accuracy                           0.59      1095
+   macro avg       0.38      0.33      0.32      1095
+weighted avg       0.53      0.59      0.52      1095
+
+f1 on dev @ epoch 2 is 0.5216
+confusion matrix
+[[1145   48    0    3   31    0   21]
+ [  83  160    0    0   10    0   27]
+ [  29   13    0    0    0    0    8]
+ [ 144   27    0    5   10    0   22]
+ [ 134   76    0    0  169    0   23]
+ [  34   14    0    1    0    0   19]
+ [ 123   62    0    0   19    0  134]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.68      0.92      0.78      1248
+           1       0.40      0.57      0.47       280
+           2       0.00      0.00      0.00        50
+           3       0.56      0.02      0.05       208
+           4       0.71      0.42      0.53       402
+           5       0.00      0.00      0.00        68
+           6       0.53      0.40      0.45       338
+
+    accuracy                           0.62      2594
+   macro avg       0.41      0.33      0.33      2594
+weighted avg       0.59      0.62      0.57      2594
+
+f1 on test @ epoch 2 is 0.5699
+confusion matrix
+[[306  19   1  13  76   1  49]
+ [ 17  81   0   3  19   1  28]
+ [  6  11   0   7   4   0  12]
+ [ 27   9   0  31  13   0  23]
+ [ 27   8   0   3 106   0  19]
+ [  3   4   0   6   1   1   7]
+ [ 25  10   1  11  36   3  67]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.74      0.66      0.70       465
+           1       0.57      0.54      0.56       149
+           2       0.00      0.00      0.00        40
+           3       0.42      0.30      0.35       103
+           4       0.42      0.65      0.51       163
+           5       0.17      0.05      0.07        22
+           6       0.33      0.44      0.37       153
+
+    accuracy                           0.54      1095
+   macro avg       0.38      0.38      0.37      1095
+weighted avg       0.54      0.54      0.53      1095
+
+f1 on dev @ epoch 3 is 0.5346
+confusion matrix
+[[845  59   2  43 185   5 109]
+ [ 29 139   2   7  41   2  60]
+ [ 18   4   2   4   6   3  13]
+ [ 64  11   3  53  27   5  45]
+ [ 52  32   1   6 275   0  36]
+ [ 18   9   0   7   5   3  26]
+ [ 49  19   2  11  55   2 200]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.79      0.68      0.73      1248
+           1       0.51      0.50      0.50       280
+           2       0.17      0.04      0.06        50
+           3       0.40      0.25      0.31       208
+           4       0.46      0.68      0.55       402
+           5       0.15      0.04      0.07        68
+           6       0.41      0.59      0.48       338
+
+    accuracy                           0.58      2594
+   macro avg       0.41      0.40      0.39      2594
+weighted avg       0.60      0.58      0.58      2594
+
+f1 on test @ epoch 3 is 0.5810
+confusion matrix
+[[378  38   1   5  28   0  15]
+ [ 18 109   0   2  11   0   9]
+ [  7  13   1   5   5   0   9]
+ [ 37  12   0  27   9   0  18]
+ [ 45  17   0   4  87   0  10]
+ [  4   5   0   6   0   1   6]
+ [ 52  19   0   7  25   2  48]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.70      0.81      0.75       465
+           1       0.51      0.73      0.60       149
+           2       0.50      0.03      0.05        40
+           3       0.48      0.26      0.34       103
+           4       0.53      0.53      0.53       163
+           5       0.33      0.05      0.08        22
+           6       0.42      0.31      0.36       153
+
+    accuracy                           0.59      1095
+   macro avg       0.50      0.39      0.39      1095
+weighted avg       0.57      0.59      0.57      1095
+
+f1 on dev @ epoch 4 is 0.5654
+confusion matrix
+[[991  92   2  32  80   0  51]
+ [ 32 202   1   0  26   1  18]
+ [ 20  12   2   5   5   0   6]
+ [ 92  23   2  48  11   1  31]
+ [ 86  61   1   3 229   0  22]
+ [ 27  16   0   3   3   1  18]
+ [ 80  62   3   6  53   0 134]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.75      0.79      0.77      1248
+           1       0.43      0.72      0.54       280
+           2       0.18      0.04      0.07        50
+           3       0.49      0.23      0.31       208
+           4       0.56      0.57      0.57       402
+           5       0.33      0.01      0.03        68
+           6       0.48      0.40      0.43       338
+
+    accuracy                           0.62      2594
+   macro avg       0.46      0.40      0.39      2594
+weighted avg       0.61      0.62      0.60      2594
+
+f1 on test @ epoch 4 is 0.6000
+confusion matrix
+[[991  92   2  32  80   0  51]
+ [ 32 202   1   0  26   1  18]
+ [ 20  12   2   5   5   0   6]
+ [ 92  23   2  48  11   1  31]
+ [ 86  61   1   3 229   0  22]
+ [ 27  16   0   3   3   1  18]
+ [ 80  62   3   6  53   0 134]]
+classification_report
+              precision    recall  f1-score   support
+
+           0       0.75      0.79      0.77      1248
+           1       0.43      0.72      0.54       280
+           2       0.18      0.04      0.07        50
+           3       0.49      0.23      0.31       208
+           4       0.56      0.57      0.57       402
+           5       0.33      0.01      0.03        68
+           6       0.48      0.40      0.43       338
+
+    accuracy                           0.62      2594
+   macro avg       0.46      0.40      0.39      2594
+weighted avg       0.61      0.62      0.60      2594
+
+best f1 on test is 0.6000
