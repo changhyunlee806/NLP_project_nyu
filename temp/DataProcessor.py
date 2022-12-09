@@ -40,7 +40,8 @@ class DataProcessor:
         trainData = pd.read_csv(train)
         for row in tqdm(trainData.iterrows()):
             emotion = row[1]['Emotion'].lower()
-            emotionVocab.word2index(emotion, train=True)
+            tmp = emotionVocab.word2index(emotion, train=True)
+            print("Emotion: ", emotion, " Idx: ", tmp)
 
         # val data
         valData = pd.read_csv(val)
