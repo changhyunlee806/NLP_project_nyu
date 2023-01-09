@@ -44,7 +44,7 @@ def get_paramsgroup(model, warmup=False):
                 'weight_decay': weight_decay
             }
         )
-        # warmup的时候不考虑bert
+
         warmup_params.append(
             {
                 'params': param,
@@ -58,7 +58,6 @@ def get_paramsgroup(model, warmup=False):
     return params
 
 
-# 창현 버전
 def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
     loss_func = torch.nn.CrossEntropyLoss(ignore_index=-1)
     dataloader = DataLoader(
@@ -92,7 +91,6 @@ def train_epoch(model, optimizer, data, epoch_num=0, max_step=-1):
         optimizer.zero_grad()
 
 
-# 창현 버전
 def test(model, data):
     yPred = []
     yTrue = []
@@ -157,7 +155,6 @@ def train(model, train_data_path, dev_data_path, test_data_path, dataProcessor):
     testset = dataProcessor.getMELDdata(test_data_path)
     trainset = dataProcessor.getMELDdata(train_data_path)
 
-    # warmup
     optimizer = torch.optim.AdamW(get_paramsgroup(model, warmup=True))
     for epoch in range(CONFIG['wp']):
         train_epoch(model, optimizer, trainset, epoch_num=epoch)
