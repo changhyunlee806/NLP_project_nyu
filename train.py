@@ -1,6 +1,5 @@
 from config import *
 from CRFmodel import CRFModel
-import itertools
 from DataProcessor import DataProcessor
 import Constants
 from sklearn.metrics import confusion_matrix
