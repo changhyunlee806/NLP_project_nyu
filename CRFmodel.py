@@ -30,7 +30,7 @@ class CRFModel(nn.Module):
         speakerInputRowNum = speakerBatchSize * speakerMaxTurns
 
         sentencesReshaped = sentences.reshape(sentInputRowNum, -1)
-        speakerIdsReshaped = speakerIds.reshape(speakerInputRowNum, -1)  # changed 6:42pm
+        speakerIdsReshaped = speakerIds.reshape(speakerInputRowNum, -1)
 
         clsId = torch.ones(speakerIdsReshaped.size(), dtype=speakerIdsReshaped.dtype, \
                            layout=speakerIdsReshaped.layout, device=speakerIdsReshaped.device) * self.CLS
@@ -56,7 +56,7 @@ class CRFModel(nn.Module):
 
         sentencesMask = torch.transpose(sentencesMask, dim0=0, dim1=1)
         speakerIds = torch.transpose(speakerIds.reshape(speakerBatchSize, speakerMaxTurns), dim0=0,
-                                     dim1=1)  # 6:55pm changed from speakerBatchSize to sentBatchSize
+                                     dim1=1)
         lastTurns = torch.transpose(lastTurns, dim0=0, dim1=1)
 
         # train

@@ -8,10 +8,6 @@ from tqdm import tqdm
 
 import Constants
 
-'''
-would be removed after checking
-'''
-
 class DataProcessor:
 
     def __init__(self, bertPath):
